@@ -25,11 +25,11 @@ export const siteConfig: SiteConfig = {
     }
   },
   favicon: [    // Leave this array empty to use the default favicon
-    // {
-    //   src: '/favicon/icon.png',    // Path of the favicon, relative to the /public directory
-    //   theme: 'light',              // (Optional) Either 'light' or 'dark', set only if you have different favicons for light and dark mode
-    //   sizes: '32x32',              // (Optional) Size of the favicon, set only if you have favicons of different sizes
-    // }
+    {
+      src: '/favicon/favicon.ico',    // Path of the favicon, relative to the /public directory
+      theme: 'light',              // (Optional) Either 'light' or 'dark', set only if you have different favicons for light and dark mode
+      sizes: '32x32',              // (Optional) Size of the favicon, set only if you have favicons of different sizes
+    }
   ]
 }
 
@@ -47,7 +47,7 @@ export const navBarConfig: NavBarConfig = {
 }
 
 export const profileConfig: ProfileConfig = {
-  avatar: 'https://img.undf.top/ob/c6256512dfcaeb133c16f68316adc615.jpg',  // Relative to the /src directory. Relative to the /public directory if it starts with '/'
+  avatar: 'https://img.undf.top/ob/1f51d3a166ab8fe93ca491fc80644de0.jpg',  // Relative to the /src directory. Relative to the /public directory if it starts with '/'
   name: '沐印',
   bio: '欢迎光临',
   links: [
