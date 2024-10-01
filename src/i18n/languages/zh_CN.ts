@@ -11,6 +11,7 @@ export const zh_CN: Translation = {
   [Key.categories]: '分类',
   [Key.recentPosts]: '最新文章',
 
+  [Key.toc]: '目录',
   [Key.comments]: '评论',
 
   [Key.untitled]: '无标题',
@@ -35,5 +36,4 @@ export const zh_CN: Translation = {
   [Key.author]: '作者',
   [Key.publishedAt]: '发布于',
   [Key.license]: '许可协议',
-  [Key.friends]: '友链',
 }

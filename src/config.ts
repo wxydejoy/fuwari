@@ -38,7 +38,10 @@ export const navBarConfig: NavBarConfig = {
     LinkPreset.Home,
     LinkPreset.Archive,
     LinkPreset.About,
-    LinkPreset.Friends,
+    {
+      name: '友链',
+      url: '/friends/'
+    },
     {
       name: 'GitHub',
       url: 'https://github.com/wxydejoy',     // Internal links should not include the base path, as it is automatically added
@@ -53,22 +56,22 @@ export const profileConfig: ProfileConfig = {
   bio: '欢迎光临',
   links: [
     // {
-    //   name: 'Twitter',
-    //   icon: 'fa6-brands:twitter',       // Visit https://icones.js.org/ for icon codes
+    //   name: 'Discord',
+    //   icon: 'fa6-brands:discord',       // Visit https://icones.js.org/ for icon codes
     //                                     // You will need to install the corresponding icon set if it's not already included
     //                                     // `pnpm add @iconify-json/<icon-set-name>`
-    //   url: 'https://twitter.com',
+    //   url: 'https://discordapp.com/users/slimenull',
     // },
     // {
     //   name: 'Steam',
     //   icon: 'fa6-brands:steam',
-    //   url: 'https://store.steampowered.com',
+    //   url: 'https://steamcommunity.com/id/slimenull/',
     // },
-    {
-      name: 'GitHub',
-      icon: 'fa6-brands:github',
-      url: 'https://github.com/wxydejoy',
-    },
+    // {
+    //   name: 'GitHub',
+    //   icon: 'fa6-brands:github',
+    //   url: 'https://github.com/SlimeNull',
+    // },
   ],
 }
 
