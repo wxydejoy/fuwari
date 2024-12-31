@@ -16,7 +16,7 @@ export const siteConfig: SiteConfig = {
   },
   banner: {
     enable: true,
-    src: 'https://img.undf.top/ob/bb56326242dce3b1afd827c197abda27.jpg',   // Relative to the /src directory. Relative to the /public directory if it starts with '/'
+    src: 'https://img.undf.top/ob/616b27741d92418019d973e0e79add48.png',   // Relative to the /src directory. Relative to the /public directory if it starts with '/'
     position: 'center', // Equivalent to object-position, defaults center
     credit: {
       enable: false,         // Display the credit text of the banner image
