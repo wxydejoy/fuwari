@@ -16,12 +16,12 @@ export const siteConfig: SiteConfig = {
   },
   banner: {
     enable: true,
-    src: 'https://img.undf.top/ob/7e7c15485964a5f4703e8df89caeef7b.png',   // Relative to the /src directory. Relative to the /public directory if it starts with '/'
+    src: 'https://img.undf.top/ob/bb56326242dce3b1afd827c197abda27.jpg',   // Relative to the /src directory. Relative to the /public directory if it starts with '/'
     position: 'center', // Equivalent to object-position, defaults center
     credit: {
       enable: false,         // Display the credit text of the banner image
       text: '',              // Credit text to be displayed
-      url: ''                // (Optional) URL link to the original artwork or artist's page
+      url: ''                // (Optional) URL link to the original zartwork or artist's page
     }
   },
   toc: {
@@ -55,7 +55,7 @@ export const navBarConfig: NavBarConfig = {
 }
 
 export const profileConfig: ProfileConfig = {
-  avatar: 'https://img.undf.top/ob/1f51d3a166ab8fe93ca491fc80644de0.jpg',  // Relative to the /src directory. Relative to the /public directory if it starts with '/'
+  avatar: 'https://img.undf.top/ob/57a18c5f9a5de165be0e349e90f8eed2.png',  // Relative to the /src directory. Relative to the /public directory if it starts with '/'
   name: '沐印',
   bio: '欢迎光临',
   links: [
