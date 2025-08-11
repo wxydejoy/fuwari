@@ -30,4 +30,4 @@ yarn.lock
 .idea
 *.iml
 
-/src/content/posts/
+src/content/posts/
