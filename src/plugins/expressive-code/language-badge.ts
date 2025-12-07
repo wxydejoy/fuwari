@@ -1,3 +1,13 @@
+/*
+ * @Author: weiekko weiekko@gmail.com
+ * @Date: 2025-08-11 22:11:36
+ * @LastEditors: weiekko weiekko@gmail.com
+ * @LastEditTime: 2025-12-07 19:29:56
+ * @FilePath: \fuwari\src\plugins\expressive-code\language-badge.ts
+ * @Description:
+*
+ * Copyright (c) 2025 by weiekko weiekko@gmail.com, All Rights Reserved.
+ */
 /**
  * Based on the discussion at https://github.com/expressive-code/expressive-code/issues/153#issuecomment-2282218684
  */
@@ -6,8 +16,7 @@ import { definePlugin } from "@expressive-code/core";
 export function pluginLanguageBadge() {
 	return definePlugin({
 		name: "Language Badge",
-		// @ts-expect-error
-		baseStyles: ({ _cssVar }) => `
+		baseStyles: () => `
       [data-language]::before {
         position: absolute;
         z-index: 2;
