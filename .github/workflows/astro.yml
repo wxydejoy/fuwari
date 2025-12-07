@@ -58,9 +58,15 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-  upyun-deploy:
-        uses: her-cat/upyun-deployer@v1.0.3
+
+      - name: 部署静态站点至分支
+        uses: peaceiris/actions-gh-pages@v1
         with:
-          bucket: ${{ secrets.UPYUN_BUCKET }}
-          operator: ${{ secrets.UPYUN_OPERATOR_NAME }}
-          password: ${{ secrets.UPYUN_OPERATOR_PWD }}
+          # 用于推送的个人访问令牌 (Personal Access Token)
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # 包含编译后静态文件的目录名，根据你的项目修改，如 'dist', 'public', 'out' 等
+          publish_dir: ./dist
+          # 目标分支的名称，例如 'gh-pages' 或你指定的任何分支
+          publish_branch: public
+          # 可选：强制推送，适用于目标分支历史与当前分支不一致的情况
+          force_orphan: true
