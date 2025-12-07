@@ -30,4 +30,7 @@ yarn.lock
 .idea
 *.iml
 
+# trae
+.trae/
+
 src/content/posts/
