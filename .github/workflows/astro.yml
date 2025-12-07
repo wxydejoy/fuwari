@@ -57,8 +57,8 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
-        with:
+        uses: peaceiris/actions-gh-pages@v4
+        with: 
           # 用于推送的个人访问令牌 (Personal Access Token)
           github_token: ${{ secrets.CLONE }}
           # 包含编译后静态文件的目录名，根据你的项目修改，如 'dist', 'public', 'out' 等
