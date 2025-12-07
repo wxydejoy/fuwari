@@ -67,3 +67,5 @@ jobs:
           publish_branch: public
           # 可选：强制推送，适用于目标分支历史与当前分支不一致的情况
           force_orphan: true
+          cname: c.undf.top
+          keep_files: true
