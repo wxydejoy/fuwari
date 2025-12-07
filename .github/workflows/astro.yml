@@ -63,7 +63,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v1
         with:
           # 用于推送的个人访问令牌 (Personal Access Token)
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.CLONE }}
           # 包含编译后静态文件的目录名，根据你的项目修改，如 'dist', 'public', 'out' 等
           publish_dir: ./dist
           # 目标分支的名称，例如 'gh-pages' 或你指定的任何分支
