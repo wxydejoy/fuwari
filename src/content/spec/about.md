@@ -2,7 +2,7 @@
  * @Author: weiekko weiekko@gmail.com
  * @Date: 2024-12-31 21:00:34
  * @LastEditors: weiekko weiekko@gmail.com
- * @LastEditTime: 2026-01-17 20:09:50
+ * @LastEditTime: 2026-01-17 20:34:53
  * @FilePath: \fuwari\src\content\spec\about.md
  * @Description:
  *

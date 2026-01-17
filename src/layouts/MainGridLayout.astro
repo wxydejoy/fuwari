@@ -95,7 +95,7 @@ const mainPanelTop = siteConfig.banner.enable
 <div class="absolute w-full z-30 pointer-events-none" style={`top: ${mainPanelTop}`}>
     <!-- The pointer-events-none here prevent blocking the click event of the TOC -->
     <div class="relative max-w-[var(--page-width)] mx-auto pointer-events-auto">
-        <div id="main-grid" class="transition-all duration-700 w-full left-0 right-0 grid grid-cols-[1fr] grid-rows-[auto_1fr_auto] lg:grid-rows-[auto] mx-auto px-0 md:px-4">
+        <div id="main-grid" class="transition-swup-fade transition-all duration-700 w-full left-0 right-0 grid grid-cols-1 grid-rows-[auto_1fr_auto] lg:grid-rows-[auto] mx-auto px-0 md:px-4">
             <!-- Banner image credit -->
             {hasBannerCredit && <a href={siteConfig.banner.credit.url} id="banner-credit" target="_blank" rel="noopener" aria-label="Visit image source"
                                    class:list={["group onload-animation transition-all absolute flex justify-center items-center rounded-full " +
@@ -110,20 +110,20 @@ const mainPanelTop = siteConfig.banner.enable
             </a>}
 
 
-            <SideBar class="row-start-2 row-span-2 col-span-2 lg:row-start-1 lg:row-span-1 lg:col-span-1 onload-animation"></SideBar>
+            <SideBar class="row-start-2 row-span-2 col-span-1 lg:row-start-1 lg:row-span-1 lg:col-span-1 onload-animation"></SideBar>
 
-            <main id="swup-container" class="transition-swup-fade col-span-2 lg:col-span-1 overflow-hidden">
+            <main id="swup-container" class="col-span-1 lg:col-span-1 overflow-hidden">
                 <div id="content-wrapper" class="onload-animation">
                     <!-- the overflow-hidden here prevent long text break the layout-->
                     <!-- make id different from windows.swup global property -->
                     <slot></slot>
-                    <div class="footer col-span-2 onload-animation hidden lg:block">
+                    <div class="footer col-span-1 onload-animation hidden lg:block">
                         <Footer></Footer>
                     </div>
                 </div>
             </main>
 
-            <div class="footer col-span-2 onload-animation block lg:hidden">
+            <div class="footer col-span-1 onload-animation block lg:hidden">
                 <Footer></Footer>
             </div>
         </div>
@@ -157,30 +157,39 @@ const mainPanelTop = siteConfig.banner.enable
 </Layout>
 
 <style is:global>
+:root {
+    --sidebar-width: 17.5rem;
+}
+
 #main-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1rem;
-    transition: grid-template-columns 700ms ease-in-out, gap 700ms ease-in-out;
 }
+
 @media (min-width: 1024px) {
     #main-grid {
         grid-template-columns: 0 1fr;
         gap: 0;
     }
     .is-home #main-grid {
-        grid-template-columns: 17.5rem 1fr;
+        grid-template-columns: var(--sidebar-width) 1fr;
         gap: 1rem;
     }
 }
 
 #sidebar {
-    transition: opacity 700ms ease-in-out, transform 700ms ease-in-out, width 700ms ease-in-out;
+    grid-column: 1;
 }
 
-:not(.is-home) #sidebar {
-    opacity: 0;
-    pointer-events: none;
+#swup-container {
+    grid-column: 1;
+}
+
+@media (min-width: 1024px) {
+    #swup-container {
+        grid-column: 2;
+    }
 }
 
 @media (max-width: 1023px) {
@@ -199,7 +208,7 @@ const mainPanelTop = siteConfig.banner.enable
     }
     .is-home #sidebar {
         opacity: 1;
-        width: 17.5rem;
+        width: var(--sidebar-width);
         pointer-events: auto;
         transform: translateX(0);
     }

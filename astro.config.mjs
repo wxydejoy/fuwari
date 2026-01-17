@@ -29,6 +29,9 @@ export default defineConfig({
 	site: "https://fuwari.vercel.app/",
 	base: "/",
 	trailingSlash: "always",
+	image: {
+		domains: ["s41.ax1x.com", "img.undf.top"],
+	},
 	integrations: [
 		tailwind({
 			nesting: true,

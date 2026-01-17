@@ -2,10 +2,12 @@
 
 import fs from "node:fs/promises";
 import path from "node:path";
+import { Image, getImage } from "astro:assets";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
+import 'photoswipe/dist/photoswipe.css';
 
 // Read the photography.txt file during build time
-let imageUrls = [];
+let imageUrls: string[] = [];
 
 try {
 	const filePath = path.join(process.cwd(), "public", "photography.txt");
@@ -19,28 +21,51 @@ try {
 } catch (error) {
 	console.error("Error reading photography.txt:", error);
 }
+
+const imageData = await Promise.all(
+	imageUrls.map(async (url) => {
+		try {
+			const optimized = await getImage({ src: url, inferSize: true });
+			return {
+				url,
+				width: optimized.attributes.width as number,
+				height: optimized.attributes.height as number,
+			};
+		} catch (e) {
+			console.error(`Failed to get size for ${url}`, e);
+			return { url, width: 800, height: 600 }; // Fallback
+		}
+	}),
+);
 ---
-<MainGridLayout title="摄影" description="我的摄影作品">
+<MainGridLayout title="摄影" description="我的摄影作品集，记录生活中的点滴时刻。">
     <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
         <div class="card-base z-10 px-9 py-6 relative w-full ">
             <h1 class="text-2xl font-bold mb-6">我的摄影作品</h1>
             
-            {imageUrls.length > 0 ? (
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 auto-rows-auto">
-                    {imageUrls.map((url, index) => (
+            {imageData.length > 0 ? (
+                <div id="photography-gallery" class="grid grid-cols-1 md:grid-cols-2 gap-4" style="grid-auto-rows: 10px;">
+                    {imageData.map((img, index) => (
                         <div 
-                            class="photography-card overflow-hidden bg-white/70 dark:bg-gray-800/70 shadow-sm hover:shadow-md transition-all duration-300 opacity-0 animate-fadeIn"
-                            style={`animation-delay: ${index * 100}ms`}
-                            key={index}
+                            class="photography-card relative overflow-hidden bg-gray-200 dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-300 opacity-0 animate-fadeIn"
+                            style={`animation-delay: ${index * 100}ms; grid-row: span ${Math.max(10, Math.ceil((img.height / img.width) * 20))};`}
                         >
-                            <a href={url} target="_blank" rel="noopener noreferrer" class="block w-full h-full cursor-zoom-in">
-                                <img 
-                                    src={url} 
+                            <div class="skeleton-loader absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800 bg-[length:200%_100%] animate-shimmer"></div>
+                            <a 
+                                href={img.url} 
+                                class="block w-full h-full cursor-zoom-in photography-link"
+                                data-pswp-width={img.width}
+                                data-pswp-height={img.height}
+                                target="_blank"
+                            >
+                                <Image 
+                                    src={img.url} 
+                                    width={img.width}
+                                    height={img.height}
                                     alt={`摄影作品 ${index + 1}`} 
-                                    class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                                    class="w-full h-full object-cover transition-all duration-500 hover:scale-110 photography-image"
                                     loading="lazy"
                                     decoding="async"
-                                    onload="this.closest('.photography-card').style.gridRow = 'span ' + Math.ceil(this.naturalHeight / this.naturalWidth * 10)"
                                 />
                             </a>
                         </div>
@@ -57,7 +82,7 @@ try {
 </MainGridLayout>
 
 <style>
-    /* Custom fade-in animation */
+    /* Custom animations */
     @keyframes fadeIn {
         from {
             opacity: 0;
@@ -69,7 +94,48 @@ try {
         }
     }
     
+    @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+    }
+    
     .animate-fadeIn {
         animation: fadeIn 0.5s ease-out forwards;
     }
+    
+    .animate-shimmer {
+        animation: shimmer 2s infinite linear;
+    }
+
+    .photography-image {
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+    }
+
+    .photography-image.loaded {
+        opacity: 1;
+    }
 </style>
+
+<script>
+    function initImages() {
+        const images = document.querySelectorAll('.photography-image');
+        images.forEach(img => {
+            if ((img as HTMLImageElement).complete) {
+                img.classList.add('loaded');
+                img.closest('.photography-card')?.querySelector('.skeleton-loader')?.remove();
+            } else {
+                img.addEventListener('load', () => {
+                    img.classList.add('loaded');
+                    img.closest('.photography-card')?.querySelector('.skeleton-loader')?.remove();
+                });
+            }
+        });
+    }
+
+    // Initialize on first load
+    initImages();
+
+    // Re-initialize after Swup content replace
+    document.addEventListener('swup:content:replace', initImages);
+</script>

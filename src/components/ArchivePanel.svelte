@@ -5,14 +5,11 @@ import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import { getPostUrlBySlug } from "../utils/url-utils";
 
-export let tags: string[];
-export let categories: string[];
 export let sortedPosts: Post[] = [];
 
-const params = new URLSearchParams(window.location.search);
-tags = params.has("tag") ? params.getAll("tag") : [];
-categories = params.has("category") ? params.getAll("category") : [];
-const uncategorized = params.get("uncategorized");
+let tags: string[] = [];
+let categories: string[] = [];
+let uncategorized: string | null = null;
 
 interface Post {
 	slug: string;
@@ -20,7 +17,7 @@ interface Post {
 		title: string;
 		tags: string[];
 		category?: string;
-		published: Date;
+		published: Date | string;
 	};
 }
 
@@ -31,9 +28,10 @@ interface Group {
 
 let groups: Group[] = [];
 
-function formatDate(date: Date) {
-	const month = (date.getMonth() + 1).toString().padStart(2, "0");
-	const day = date.getDate().toString().padStart(2, "0");
+function formatDate(date: Date | string) {
+	const d = typeof date === "string" ? new Date(date) : date;
+	const month = (d.getMonth() + 1).toString().padStart(2, "0");
+	const day = d.getDate().toString().padStart(2, "0");
 	return `${month}-${day}`;
 }
 
@@ -42,6 +40,11 @@ function formatTag(tagList: string[]) {
 }
 
 onMount(async () => {
+	const params = new URLSearchParams(window.location.search);
+	tags = params.has("tag") ? params.getAll("tag") : [];
+	categories = params.has("category") ? params.getAll("category") : [];
+	uncategorized = params.get("uncategorized");
+
 	let filteredPosts: Post[] = sortedPosts;
 
 	if (tags.length > 0) {
@@ -64,7 +67,8 @@ onMount(async () => {
 
 	const grouped = filteredPosts.reduce(
 		(acc, post) => {
-			const year = post.data.published.getFullYear();
+			const date = typeof post.data.published === "string" ? new Date(post.data.published) : post.data.published;
+			const year = date.getFullYear();
 			if (!acc[year]) {
 				acc[year] = [];
 			}
