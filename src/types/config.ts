@@ -22,12 +22,16 @@ export type SiteConfig = {
 	};
 	banner: {
 		enable: boolean;
-		src: string;
+		src: string | string[];
 		position?: "top" | "center" | "bottom";
 		credit: {
 			enable: boolean;
 			text: string;
 			url?: string;
+		};
+		carousel?: {
+			enable: boolean;
+			interval: number;
 		};
 	};
 	toc: {

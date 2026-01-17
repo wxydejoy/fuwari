@@ -28,21 +28,33 @@ export function setHue(hue: number): void {
 }
 
 export function applyThemeToDocument(theme: LIGHT_DARK_MODE) {
+	let isDarkMode = false;
+	
 	switch (theme) {
 		case LIGHT_MODE:
 			document.documentElement.classList.remove("dark");
+			isDarkMode = false;
 			break;
 		case DARK_MODE:
 			document.documentElement.classList.add("dark");
+			isDarkMode = true;
 			break;
 		case AUTO_MODE:
-			if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+			isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+			if (isDarkMode) {
 				document.documentElement.classList.add("dark");
 			} else {
 				document.documentElement.classList.remove("dark");
 			}
 			break;
 	}
+
+	// Set ocean gradient background based on theme - fixed background with no scrolling
+	const bgStyle = isDarkMode ? 'var(--ocean-gradient-dark)' : 'var(--ocean-gradient-light)';
+	document.documentElement.style.background = bgStyle;
+	document.documentElement.style.backgroundAttachment = 'fixed';
+	document.documentElement.style.backgroundRepeat = 'no-repeat';
+	document.documentElement.style.backgroundSize = 'cover';
 
 	// Set the theme for Expressive Code
 	document.documentElement.setAttribute(

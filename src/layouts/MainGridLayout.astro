@@ -53,10 +53,42 @@ const mainPanelTop = siteConfig.banner.enable
 
 <!-- Banner -->
 {siteConfig.banner.enable && <div id="banner-wrapper" class={`absolute z-10 w-full transition duration-700 overflow-hidden`} style={`top: -${BANNER_HEIGHT_EXTEND}vh`}>
-    <ImageWrapper id="banner" alt="Banner image of the blog" class:list={["object-cover h-full transition duration-700 opacity-0 scale-105"]}
-                  src={siteConfig.banner.src} position={siteConfig.banner.position}
-    >
-    </ImageWrapper>
+    <div class="relative h-full overflow-hidden">
+        <!-- Banner carousel -->
+        <div id="banner-carousel" class="relative h-full w-full">
+            {Array.isArray(siteConfig.banner.src) ? 
+                siteConfig.banner.src.map((src, index) => (
+                    <div 
+                        key={index} 
+                        id={`banner-image-${index}`}
+                        class:list={[
+                            "object-cover h-full transition-all duration-1000 opacity-0 scale-105 absolute inset-0",
+                            { "opacity-100 scale-100": index === 0 }
+                        ]}
+                    >
+                        <ImageWrapper 
+                            alt={`Banner image ${index + 1} of the blog`} 
+                            class="object-cover h-full"
+                            src={src} 
+                            position={siteConfig.banner.position}
+                        >
+                        </ImageWrapper>
+                    </div>
+                )) : (
+                    <ImageWrapper 
+                        alt="Banner image of the blog" 
+                        class:list={["object-cover h-full transition duration-700 opacity-0 scale-105"]}
+                        src={siteConfig.banner.src} 
+                        position={siteConfig.banner.position}
+                    >
+                    </ImageWrapper>
+                )
+            }
+        </div>
+        <!-- Subtle ocean overlay effect -->
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-[var(--primary)]/8 to-[var(--primary)]/15 opacity-30 mix-blend-overlay pointer-events-none"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-transparent via-black/10 to-transparent opacity-40 pointer-events-none"></div>
+    </div>
 </div>}
 
 <!-- Main content -->

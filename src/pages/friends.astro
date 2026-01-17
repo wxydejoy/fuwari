@@ -11,7 +11,8 @@ if (!friendsPost) {
 
 // Parse friends data from markdown content
 const friendsContent = friendsPost.body;
-const friendRegex = /####\s+([^\n]+)\n\s*-\s*(https?:\/\/[^\n]+)\n\s*-\s*(https?:\/\/[^\n]+)\n\s*-\s*([^\n]+)/g;
+const friendRegex =
+	/####\s+([^\n]+)\n\s*-\s*(https?:\/\/[^\n]+)\n\s*-\s*(https?:\/\/[^\n]+)\n\s*-\s*([^\n]+)/g;
 const friends = [];
 let match;
 
@@ -52,6 +53,43 @@ while ((match = friendRegex.exec(friendsContent)) !== null) {
                         </p>
                     </a>
                 ))}
+            </div>
+
+            <!-- 友链申请部分 -->
+            <div class="mt-12 p-6 bg-white/70 dark:bg-gray-800/70 rounded-[var(--radius-large)] shadow-sm">
+                <h2 class="text-xl font-bold mb-4">友链申请</h2>
+                <p class="text-gray-600 dark:text-gray-300 mb-4">
+                    欢迎交换友链！请按照以下格式发送邮件至我的邮箱，我会尽快处理您的申请。
+                </p>
+                
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-2">申请格式：</h3>
+                    <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                        <p>网站名称：[您的网站名称]</p>
+                        <p>网站地址：[您的网站URL]</p>
+                        <p>网站头像：[您的网站头像URL]</p>
+                        <p>网站描述：[您的网站描述]</p>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <h3 class="text-lg font-semibold mb-2">申请邮箱：</h3>
+                    <a 
+                        href="mailto:weiekko@gamil.com?subject=友链申请&body=网站名称：%0A网站地址：%0A网站头像：%0A网站描述：%0A" 
+                        class="text-[var(--primary)] hover:underline font-medium"
+                    >
+                        weiekko@gamil.com
+                    </a>
+                </div>
+                
+                <div class="text-gray-500 dark:text-gray-400 text-sm">
+                    <p>注意事项：</p>
+                    <ul class="list-disc list-inside mt-1">
+                        <li>请确保您的网站内容健康，无违法违规信息</li>
+                        <li>请先添加我的友链，再申请交换</li>
+                        <li>申请后我会在1-3个工作日内处理</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>

@@ -1,0 +1,71 @@
+---
+
+import fs from "node:fs/promises";
+import path from "node:path";
+import MainGridLayout from "../layouts/MainGridLayout.astro";
+
+// Read the photography.txt file during build time
+let imageUrls = [];
+
+try {
+	const filePath = path.join(process.cwd(), "public", "photography.txt");
+	const content = await fs.readFile(filePath, "utf-8");
+
+	// Parse the file, each line is an image URL
+	imageUrls = content
+		.split("\n")
+		.map((line) => line.trim())
+		.filter((line) => line.length > 0 && line.startsWith("http"));
+} catch (error) {
+	console.error("Error reading photography.txt:", error);
+}
+---
+<MainGridLayout title="摄影" description="我的摄影作品">
+    <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
+        <div class="card-base z-10 px-9 py-6 relative w-full ">
+            <h1 class="text-2xl font-bold mb-6">我的摄影作品</h1>
+            
+            {imageUrls.length > 0 ? (
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 auto-rows-auto">
+                    {imageUrls.map((url, index) => (
+                        <div 
+                            class="photography-card overflow-hidden bg-white/70 dark:bg-gray-800/70 shadow-sm hover:shadow-md transition-all duration-300 opacity-0 animate-fadeIn"
+                            style={`animation-delay: ${index * 100}ms`}
+                            key={index}
+                        >
+                            <img 
+                                src={url} 
+                                alt={`摄影作品 ${index + 1}`} 
+                                class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                                onload="this.parentElement.style.gridRow = 'span ' + Math.ceil(this.naturalHeight / this.naturalWidth * 10)"
+                            />
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div class="text-center py-12 text-gray-500 dark:text-gray-400">
+                    <p>暂无摄影作品</p>
+                    <p class="text-sm mt-2">请在 public/photography.txt 文件中添加图片链接</p>
+                </div>
+            )}
+        </div>
+    </div>
+</MainGridLayout>
+
+<style>
+    /* Custom fade-in animation */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .animate-fadeIn {
+        animation: fadeIn 0.5s ease-out forwards;
+    }
+</style>
