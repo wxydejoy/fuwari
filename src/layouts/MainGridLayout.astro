@@ -5,6 +5,7 @@ import Navbar from "@components/Navbar.astro";
 import type { MarkdownHeading } from "astro";
 import { Icon } from "astro-icon/components";
 import ImageWrapper from "../components/misc/ImageWrapper.astro";
+import SideBar from "@components/widget/SideBar.astro";
 import TOC from "../components/widget/TOC.astro";
 import { siteConfig } from "../config";
 import {
@@ -94,7 +95,7 @@ const mainPanelTop = siteConfig.banner.enable
 <div class="absolute w-full z-30 pointer-events-none" style={`top: ${mainPanelTop}`}>
     <!-- The pointer-events-none here prevent blocking the click event of the TOC -->
     <div class="relative max-w-[var(--page-width)] mx-auto pointer-events-auto">
-        <div id="main-grid" class="transition duration-700 w-full left-0 right-0 grid grid-cols-[1fr] grid-rows-[auto_1fr_auto] lg:grid-rows-[auto] mx-auto gap-4 px-0 md:px-4">
+        <div id="main-grid" class="transition-all duration-700 w-full left-0 right-0 grid grid-cols-[1fr] grid-rows-[auto_1fr_auto] lg:grid-rows-[auto] mx-auto px-0 md:px-4">
             <!-- Banner image credit -->
             {hasBannerCredit && <a href={siteConfig.banner.credit.url} id="banner-credit" target="_blank" rel="noopener" aria-label="Visit image source"
                                    class:list={["group onload-animation transition-all absolute flex justify-center items-center rounded-full " +
@@ -109,7 +110,7 @@ const mainPanelTop = siteConfig.banner.enable
             </a>}
 
 
-
+            <SideBar class="row-start-2 row-span-2 col-span-2 lg:row-start-1 lg:row-span-1 lg:col-span-1 onload-animation"></SideBar>
 
             <main id="swup-container" class="transition-swup-fade col-span-2 lg:col-span-1 overflow-hidden">
                 <div id="content-wrapper" class="onload-animation">
@@ -154,3 +155,53 @@ const mainPanelTop = siteConfig.banner.enable
 
 
 </Layout>
+
+<style is:global>
+#main-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    transition: grid-template-columns 700ms ease-in-out, gap 700ms ease-in-out;
+}
+@media (min-width: 1024px) {
+    #main-grid {
+        grid-template-columns: 0 1fr;
+        gap: 0;
+    }
+    .is-home #main-grid {
+        grid-template-columns: 17.5rem 1fr;
+        gap: 1rem;
+    }
+}
+
+#sidebar {
+    transition: opacity 700ms ease-in-out, transform 700ms ease-in-out, width 700ms ease-in-out;
+}
+
+:not(.is-home) #sidebar {
+    opacity: 0;
+    pointer-events: none;
+}
+
+@media (max-width: 1023px) {
+    :not(.is-home) #sidebar {
+        display: none;
+    }
+}
+
+@media (min-width: 1024px) {
+    #sidebar {
+        opacity: 0;
+        width: 0;
+        pointer-events: none;
+        overflow: hidden;
+        transform: translateX(-2rem);
+    }
+    .is-home #sidebar {
+        opacity: 1;
+        width: 17.5rem;
+        pointer-events: auto;
+        transform: translateX(0);
+    }
+}
+</style>

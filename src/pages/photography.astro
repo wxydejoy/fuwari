@@ -33,12 +33,16 @@ try {
                             style={`animation-delay: ${index * 100}ms`}
                             key={index}
                         >
-                            <img 
-                                src={url} 
-                                alt={`摄影作品 ${index + 1}`} 
-                                class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                                onload="this.parentElement.style.gridRow = 'span ' + Math.ceil(this.naturalHeight / this.naturalWidth * 10)"
-                            />
+                            <a href={url} target="_blank" rel="noopener noreferrer" class="block w-full h-full cursor-zoom-in">
+                                <img 
+                                    src={url} 
+                                    alt={`摄影作品 ${index + 1}`} 
+                                    class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                                    loading="lazy"
+                                    decoding="async"
+                                    onload="this.closest('.photography-card').style.gridRow = 'span ' + Math.ceil(this.naturalHeight / this.naturalWidth * 10)"
+                                />
+                            </a>
                         </div>
                     ))}
                 </div>
