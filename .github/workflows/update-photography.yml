@@ -1,0 +1,103 @@
+name: Update Photography
+
+on:
+  # 定时运行：每天UTC时间2:00（北京时间10:00）
+  schedule:
+    - cron: '0 2 * * *'
+  # 手动触发
+  workflow_dispatch:
+  # 每小时运行一次（可选）
+  # schedule:
+  #   - cron: '0 * * * *'
+
+# Allow this job to clone, modify, and push to repo
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  update-photography:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Get current photography.txt
+        id: current-photos
+        run: |
+          if [ -f "public/photography.txt" ]; then
+            CURRENT=$(cat "public/photography.txt")
+            echo "current=$CURRENT" >> $GITHUB_OUTPUT
+          else
+            echo "current=" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+
+      - name: Fetch photography album from imgchr
+        id: fetch-photos
+        run: |
+          echo "Fetching photography album from imgchr..."
+          # 获取图床相册页面
+          RESPONSE=$(curl -s "https://imgchr.com/album/vkBKs")
+          
+          # 提取图片链接（根据实际页面结构调整正则表达式）
+          # 这里假设图片链接在img标签中
+          # 移除.md部分以获取正确的图片链接
+          NEW_URLS=$(echo "$RESPONSE" | grep -oP 'https://[^"]*\.jpg[^"]*' | sed 's/\.md\.jpg/.jpg/g' | sort -u)
+          
+          # 转换为每行一个URL的格式
+          NEW_CONTENT=$(echo "$NEW_URLS" | sed 's/ /\n/g')
+          
+          echo "new=$NEW_CONTENT" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Compare and update
+        id: compare-update
+        run: |
+          CURRENT="${{ steps.current-photos.outputs.current }}"
+          NEW="${{ steps.fetch-photos.outputs.new }}"
+          
+          echo "Current content length: ${#CURRENT}"
+          echo "New content length: ${#NEW}"
+          
+          # 比较是否有变化
+          if [ "$CURRENT" != "$NEW" ]; then
+            echo "Changes detected, updating photography.txt"
+            
+            # 备份旧文件
+            if [ -f "public/photography.txt" ]; then
+              cp "public/photography.txt" "public/photography.txt.backup"
+            fi
+            
+            # 更新文件
+            echo "$NEW" > "public/photography.txt"
+            
+            # 设置Git配置
+            git config --local user.email "action@github.com"
+            git config --local user.name "GitHub Action"
+            
+            # 提交更改
+            git add "public/photography.txt"
+            if [ -f "public/photography.txt.backup" ]; then
+              git add "public/photography.txt.backup"
+            fi
+            
+            git commit -m "Update photography.txt from imgchr album
+            
+            # 推送更改
+            git push
+            
+            echo "Updated successfully!"
+          else
+            echo "No changes detected"
+          fi
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

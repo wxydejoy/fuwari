@@ -17,7 +17,13 @@ export const siteConfig: SiteConfig = {
 	},
 	banner: {
 		enable: true,
-		src: ["https://img.undf.top/ob/616b27741d92418019d973e0e79add48.png","https://s41.ax1x.com/2026/01/10/pZ0RNwt.jpg"], // Support multiple images for carousel
+		src: [
+			"https://img.undf.top/ob/616b27741d92418019d973e0e79add48.png",
+			"https://s41.ax1x.com/2026/01/17/pZs7tAS.jpg",
+			"https://s41.ax1x.com/2026/01/17/pZs7cAU.jpg",
+			"https://s41.ax1x.com/2026/01/17/pZs7sBV.png",
+			"https://s41.ax1x.com/2026/01/17/pZs7gNF.jpg",
+		], // Support multiple images for carousel
 		position: "center", // Equivalent to object-position, only supports "top", "center", "bottom". "center" by default
 		credit: {
 			enable: false, // Display the credit text of the banner image
