@@ -1,7 +1,9 @@
 
 ## 背景
 
-![image](https://img.undf.top/ob/5a6e68e7ea68562b2499934f9f0402f4.png)
+<div class="flex justify-center">
+  <img src="https://img.undf.top/ob/5a6e68e7ea68562b2499934f9f0402f4.png" alt="image" class="max-w-full" />
+</div>
 
 博客建立到现在已经近三年了，期间各种写作方式，各种主题，都折腾了不少，简单聊聊，分享一下。详细的操作方式这里就不啰嗦了，相信胆大心细的你肯定能解决。
 
