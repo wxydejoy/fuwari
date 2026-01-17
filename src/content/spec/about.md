@@ -1,15 +1,3 @@
-<!--
- * @Author: weiekko weiekko@gmail.com
- * @Date: 2024-12-31 21:00:34
- * @LastEditors: weiekko weiekko@gmail.com
- * @LastEditTime: 2026-01-17 20:34:53
- * @FilePath: \fuwari\src\content\spec\about.md
- * @Description:
- *
- * Copyright (c) 2025 by weiekko weiekko@gmail.com, All Rights Reserved.
- *
- * 文件结构说明：首先是更新日志目录，然后是关于相关内容，最后才是更新日志详细内容
--->
 
 ## 背景
 
