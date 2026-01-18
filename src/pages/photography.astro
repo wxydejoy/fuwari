@@ -47,10 +47,9 @@ const imageData = await Promise.all(
                 <div id="photography-gallery" class="grid grid-cols-1 md:grid-cols-2 gap-4" style="grid-auto-rows: 10px;">
                     {imageData.map((img, index) => (
                         <div 
-                            class="photography-card relative overflow-hidden bg-gray-200 dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-300 opacity-0 animate-fadeIn"
-                            style={`animation-delay: ${index * 100}ms; grid-row: span ${Math.max(10, Math.ceil((img.height / img.width) * 20))};`}
+                            class="photography-card relative overflow-hidden bg-gray-200 dark:bg-gray-800 shadow-sm hover:shadow-md"
+                            style={`grid-row: span ${Math.max(10, Math.ceil((img.height / img.width) * 20))};`}
                         >
-                            <div class="skeleton-loader absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800 bg-[length:200%_100%] animate-shimmer"></div>
                             <a 
                                 href={img.url} 
                                 class="block w-full h-full cursor-zoom-in photography-link"
@@ -63,7 +62,7 @@ const imageData = await Promise.all(
                                     width={img.width}
                                     height={img.height}
                                     alt={`摄影作品 ${index + 1}`} 
-                                    class="w-full h-full object-cover transition-all duration-500 hover:scale-110 photography-image"
+                                    class="w-full h-full object-cover hover:scale-105 photography-image"
                                     loading="lazy"
                                     decoding="async"
                                 />
@@ -82,60 +81,11 @@ const imageData = await Promise.all(
 </MainGridLayout>
 
 <style>
-    /* Custom animations */
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    @keyframes shimmer {
-        0% { background-position: -200% 0; }
-        100% { background-position: 200% 0; }
-    }
-    
-    .animate-fadeIn {
-        animation: fadeIn 0.5s ease-out forwards;
-    }
-    
-    .animate-shimmer {
-        animation: shimmer 2s infinite linear;
-    }
-
     .photography-image {
-        opacity: 0;
-        transition: opacity 0.5s ease-in-out;
-    }
-
-    .photography-image.loaded {
         opacity: 1;
     }
 </style>
 
 <script>
-    function initImages() {
-        const images = document.querySelectorAll('.photography-image');
-        images.forEach(img => {
-            if ((img as HTMLImageElement).complete) {
-                img.classList.add('loaded');
-                img.closest('.photography-card')?.querySelector('.skeleton-loader')?.remove();
-            } else {
-                img.addEventListener('load', () => {
-                    img.classList.add('loaded');
-                    img.closest('.photography-card')?.querySelector('.skeleton-loader')?.remove();
-                });
-            }
-        });
-    }
-
-    // Initialize on first load
-    initImages();
-
-    // Re-initialize after Swup content replace
-    document.addEventListener('swup:content:replace', initImages);
+    // No animation initialization needed
 </script>
