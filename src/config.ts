@@ -71,7 +71,7 @@ export const navBarConfig: NavBarConfig = {
 };
 
 export const profileConfig: ProfileConfig = {
-	avatar: "https://img.undf.top/ob/57a18c5f9a5de165be0e349e90f8eed2.png", // Relative to the /src directory. Relative to the /public directory if it starts with "/"
+	avatar: "https://img.undf.top/ob/6667b59a3589d70694579a2fddce4ddc.png", // Relative to the /src directory. Relative to the /public directory if it starts with "/"
 	name: "沐印",
 	bio: "欢迎光临",
 	links: [
