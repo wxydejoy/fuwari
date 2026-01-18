@@ -1,14 +1,21 @@
 ---
 import ArchivePanel from "@components/ArchivePanel.svelte";
+import TagCloud from "@components/TagCloud.svelte";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
-import { getSortedPostsList } from "../utils/content-utils";
+import { getSortedPostsList, getTagList } from "../utils/content-utils";
 
 const sortedPostsList = await getSortedPostsList();
+const tagList = await getTagList();
+
+// Debug: Check tagList content
+console.log('TagList:', tagList);
 ---
 
 <MainGridLayout title={i18n(I18nKey.archive)} description="所有文章归档，按时间顺序排列，方便查找过往内容。">
+    <!-- Remove client:only to enable SSR -->
+    <TagCloud tags={tagList}></TagCloud>
     <ArchivePanel sortedPosts={sortedPostsList} client:only="svelte"></ArchivePanel>
 </MainGridLayout>
 

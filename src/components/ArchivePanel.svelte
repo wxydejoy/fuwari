@@ -1,5 +1,5 @@
 <script lang="ts">
-import { onMount } from "svelte";
+import { onMount, onDestroy } from "svelte";
 
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
@@ -39,7 +39,8 @@ function formatTag(tagList: string[]) {
 	return tagList.map((t) => `#${t}`).join(" ");
 }
 
-onMount(async () => {
+// Function to filter and group posts based on URL params
+function filterAndGroupPosts() {
 	const params = new URLSearchParams(window.location.search);
 	tags = params.has("tag") ? params.getAll("tag") : [];
 	categories = params.has("category") ? params.getAll("category") : [];
@@ -86,6 +87,36 @@ onMount(async () => {
 	groupedPostsArray.sort((a, b) => b.year - a.year);
 
 	groups = groupedPostsArray;
+}
+
+onMount(async () => {
+	// Initial filtering
+	filterAndGroupPosts();
+	
+	// Listen for URL changes (e.g. when clicking tags)
+	window.addEventListener('popstate', filterAndGroupPosts);
+	window.addEventListener('hashchange', filterAndGroupPosts);
+	// Listen for custom tag filter change event
+	window.addEventListener('tagFilterChanged', filterAndGroupPosts);
+	
+	// Also listen for direct URL changes that might not trigger popstate
+	setInterval(() => {
+		const currentUrl = window.location.href;
+		if (currentUrl !== lastUrl) {
+			lastUrl = currentUrl;
+			filterAndGroupPosts();
+		}
+	}, 1000);
+});
+
+// Track last URL to detect changes
+let lastUrl = window.location.href;
+
+// Clean up event listeners when component is destroyed
+onDestroy(() => {
+	window.removeEventListener('popstate', filterAndGroupPosts);
+	window.removeEventListener('hashchange', filterAndGroupPosts);
+	window.removeEventListener('tagFilterChanged', filterAndGroupPosts);
 });
 </script>
 
