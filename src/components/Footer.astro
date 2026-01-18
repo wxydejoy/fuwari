@@ -2,8 +2,10 @@
 
 import { profileConfig } from "../config";
 import { url } from "../utils/url-utils";
+import packageJson from "../../package.json" assert { type: "json" };
 
 const currentYear = new Date().getFullYear();
+const version = packageJson.version;
 ---
 
 <!--<div class="border-t border-[var(&#45;&#45;primary)] mx-16 border-dashed py-8 max-w-[var(&#45;&#45;page-width)] flex flex-col items-center justify-center px-6">-->
@@ -28,5 +30,7 @@ const currentYear = new Date().getFullYear();
         <a class="transition link text-[var(--primary)] font-medium" target="_blank" href="https://baike.baidu.com/item/%E5%AE%88%E5%B2%B8%E4%BA%BA/64754105">守岸人</a>
         For
         <a class="transition link text-[var(--primary)] font-medium" target="_blank" href="https://baike.baidu.com/item/%E6%BC%82%E6%B3%8A%E8%80%85/61295829">漂泊者</a>
+        <br>
+        <span class="text-xs opacity-70">Version: {version}</span>
     </div>
 </div>
