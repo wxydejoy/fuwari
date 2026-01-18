@@ -1,12 +1,12 @@
 {
   "name": "fuwari",
   "type": "module",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
     "check": "astro check",
-    "build": "astro build && pagefind --site dist",
+    "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
     "type-check": "tsc --noEmit --isolatedDeclarations",
@@ -46,6 +46,7 @@
     "astro-icon": "^1.1.5",
     "hastscript": "^9.0.1",
     "katex": "^0.16.27",
+    "lunr": "^2.3.9",
     "markdown-it": "^14.1.0",
     "mdast-util-to-string": "^4.0.0",
     "overlayscrollbars": "^2.13.0",

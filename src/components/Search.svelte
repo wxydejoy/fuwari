@@ -4,137 +4,147 @@ import { i18n } from "@i18n/translation";
 import Icon from "@iconify/svelte";
 import { url } from "@utils/url-utils.ts";
 import { onMount } from "svelte";
-import type { SearchResult } from "@/global";
+
+// 定义搜索结果类型
+interface SearchResult {
+  url: string;
+  title: string;
+  description: string;
+  tags: string[];
+  category: string;
+}
 
 let keywordDesktop = "";
 let keywordMobile = "";
 let result: SearchResult[] = [];
 let isSearching = false;
-let pagefindLoaded = false;
 let initialized = false;
+let searchData: SearchResult[] = [];
+let isPanelOpen = false;
 
-const fakeResult: SearchResult[] = [
-	{
-		url: url("/"),
-		meta: {
-			title: "This Is a Fake Search Result",
-		},
-		excerpt:
-			"Because the search cannot work in the <mark>dev</mark> environment.",
-	},
-	{
-		url: url("/"),
-		meta: {
-			title: "If You Want to Test the Search",
-		},
-		excerpt: "Try running <mark>npm build && npm preview</mark> instead.",
-	},
-];
+// 添加防抖功能
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const togglePanel = () => {
-	const panel = document.getElementById("search-panel");
-	panel?.classList.toggle("float-panel-closed");
+  const panel = document.getElementById("search-panel");
+  if (panel) {
+    const isClosed = panel.classList.contains("float-panel-closed");
+    if (isClosed) {
+      panel.classList.remove("float-panel-closed");
+      isPanelOpen = true;
+    } else {
+      panel.classList.add("float-panel-closed");
+      isPanelOpen = false;
+    }
+  }
 };
 
 const setPanelVisibility = (show: boolean, isDesktop: boolean): void => {
-	const panel = document.getElementById("search-panel");
-	if (!panel || !isDesktop) return;
+  if (!isDesktop) return;
+  
+  const panel = document.getElementById("search-panel");
+  if (!panel) return;
 
-	if (show) {
-		panel.classList.remove("float-panel-closed");
-	} else {
-		panel.classList.add("float-panel-closed");
-	}
+  if (show && !isPanelOpen) {
+    panel.classList.remove("float-panel-closed");
+    isPanelOpen = true;
+  } else if (!show && isPanelOpen) {
+    panel.classList.add("float-panel-closed");
+    isPanelOpen = false;
+  }
 };
 
-const search = async (keyword: string, isDesktop: boolean): Promise<void> => {
-	if (!keyword) {
-		setPanelVisibility(false, isDesktop);
-		result = [];
-		return;
-	}
+// 搜索函数，只检索标题、标签和分类
+const search = (keyword: string, isDesktop: boolean): void => {
+  if (!keyword) {
+    setPanelVisibility(false, isDesktop);
+    result = [];
+    return;
+  }
 
-	if (!initialized) {
-		return;
-	}
+  if (!initialized) {
+    return;
+  }
 
-	isSearching = true;
+  isSearching = true;
 
-	try {
-		let searchResults: SearchResult[] = [];
+  try {
+    const lowercaseKeyword = keyword.toLowerCase();
+    
+    // 过滤搜索结果，只匹配标题、标签或分类
+    result = searchData.filter(post => {
+      const titleMatch = post.title.toLowerCase().includes(lowercaseKeyword);
+      const categoryMatch = post.category && post.category.toLowerCase().includes(lowercaseKeyword);
+      const tagsMatch = post.tags.some(tag => tag.toLowerCase().includes(lowercaseKeyword));
+      
+      return titleMatch || categoryMatch || tagsMatch;
+    });
 
-		if (import.meta.env.PROD && pagefindLoaded && window.pagefind) {
-			const response = await window.pagefind.search(keyword);
-			searchResults = await Promise.all(
-				response.results.map((item) => item.data()),
-			);
-		} else if (import.meta.env.DEV) {
-			searchResults = fakeResult;
-		} else {
-			searchResults = [];
-			console.error("Pagefind is not available in production environment.");
-		}
-
-		result = searchResults;
-		setPanelVisibility(result.length > 0, isDesktop);
-	} catch (error) {
-		console.error("Search error:", error);
-		result = [];
-		setPanelVisibility(false, isDesktop);
-	} finally {
-		isSearching = false;
-	}
+    setPanelVisibility(result.length > 0, isDesktop);
+  } catch (error) {
+    console.error("Search error:", error);
+    result = [];
+    setPanelVisibility(false, isDesktop);
+  } finally {
+    isSearching = false;
+  }
 };
 
-onMount(() => {
-	const initializeSearch = () => {
-		initialized = true;
-		pagefindLoaded =
-			typeof window !== "undefined" &&
-			!!window.pagefind &&
-			typeof window.pagefind.search === "function";
-		console.log("Pagefind status on init:", pagefindLoaded);
-		if (keywordDesktop) search(keywordDesktop, true);
-		if (keywordMobile) search(keywordMobile, false);
-	};
+// 防抖搜索函数
+const debouncedSearch = (keyword: string, isDesktop: boolean): void => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+  }
+  
+  searchTimeout = setTimeout(() => {
+    search(keyword, isDesktop);
+  }, 200); // 200ms 防抖延迟
+};
 
-	if (import.meta.env.DEV) {
-		console.log(
-			"Pagefind is not available in development mode. Using mock data.",
-		);
-		initializeSearch();
-	} else {
-		document.addEventListener("pagefindready", () => {
-			console.log("Pagefind ready event received.");
-			initializeSearch();
-		});
-		document.addEventListener("pagefindloaderror", () => {
-			console.warn(
-				"Pagefind load error event received. Search functionality will be limited.",
-			);
-			initializeSearch(); // Initialize with pagefindLoaded as false
-		});
-
-		// Fallback in case events are not caught or pagefind is already loaded by the time this script runs
-		setTimeout(() => {
-			if (!initialized) {
-				console.log("Fallback: Initializing search after timeout.");
-				initializeSearch();
-			}
-		}, 2000); // Adjust timeout as needed
-	}
+onMount(async () => {
+  try {
+    // 加载搜索数据
+    const response = await fetch("/search-data.json");
+    if (response.ok) {
+      searchData = await response.json();
+      initialized = true;
+      console.log("Search data loaded successfully:", searchData.length, "posts");
+    } else {
+      throw new Error("Failed to load search data");
+    }
+  } catch (error) {
+    console.error("Error initializing search:", error);
+    // 开发环境下使用模拟数据
+    if (import.meta.env.DEV) {
+      searchData = [
+        {
+          url: url("/"),
+          title: "This Is a Fake Search Result",
+          description: "Because the search cannot work in the dev environment.",
+          tags: ["dev", "search"],
+          category: "test"
+        },
+        {
+          url: url("/"),
+          title: "If You Want to Test the Search",
+          description: "Try running npm build && npm preview instead.",
+          tags: ["build", "preview"],
+          category: "test"
+        }
+      ];
+      initialized = true;
+      console.log("Using mock search data in dev environment");
+    }
+  }
 });
 
+// 使用防抖搜索，避免每次按键都触发搜索
 $: if (initialized && keywordDesktop) {
-	(async () => {
-		await search(keywordDesktop, true);
-	})();
+  debouncedSearch(keywordDesktop, true);
 }
 
 $: if (initialized && keywordMobile) {
-	(async () => {
-		await search(keywordMobile, false);
-	})();
+  debouncedSearch(keywordMobile, false);
 }
 </script>
 
@@ -176,12 +186,23 @@ top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
     {#each result as item}
         <a href={item.url}
            class="transition first-of-type:mt-2 lg:first-of-type:mt-0 group block
-       rounded-xl text-lg px-3 py-2 hover:bg-[var(--btn-plain-bg-hover)] active:bg-[var(--btn-plain-bg-active)]">
+       rounded-xl text-lg px-3 py-2 hover:bg-[var(--btn-plain-bg-hover)] active:bg-[var(--btn-plain-bg-active)]"
+           on:click={() => {
+               // 清除搜索内容
+               keywordDesktop = "";
+               keywordMobile = "";
+               result = [];
+               // 关闭搜索面板
+               const panel = document.getElementById("search-panel");
+               if (panel) {
+                   panel.classList.add("float-panel-closed");
+               }
+           }}>
             <div class="transition text-90 inline-flex font-bold group-hover:text-[var(--primary)]">
-                {item.meta.title}<Icon icon="fa6-solid:chevron-right" class="transition text-[0.75rem] translate-x-1 my-auto text-[var(--primary)]"></Icon>
+                {item.title}<Icon icon="fa6-solid:chevron-right" class="transition text-[0.75rem] translate-x-1 my-auto text-[var(--primary)]"></Icon>
             </div>
             <div class="transition text-sm text-50">
-                {@html item.excerpt}
+                {item.description}
             </div>
         </a>
     {/each}
