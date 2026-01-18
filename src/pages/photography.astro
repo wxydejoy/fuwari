@@ -43,6 +43,29 @@ const imageData = await Promise.all(
         <div class="card-base z-10 px-9 py-6 relative w-full ">
             <h1 class="text-2xl font-bold mb-6">我的摄影作品</h1>
             
+            <div class="mb-8 p-6 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                <h2 class="text-xl font-semibold mb-4">我的装备</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white dark:bg-gray-700 p-4 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-medium mb-2">索尼 ZV-E10</h3>
+                        <p class="mb-1"><strong>型号：</strong>ZV-E10</p>
+                        <p class="mb-1"><strong>类型：</strong>APS-C 画幅微单相机</p>
+                        <p class="mb-1"><strong>传感器：</strong>2420 万像素 APS-C CMOS</p>
+                        <p class="mb-1"><strong>视频：</strong>4K 30fps / 1080p 120fps</p>
+                        <p class="mb-1"><strong>特点：</strong>翻转触摸屏、侧开式 HDMI、优秀的自动对焦</p>
+                        <p><strong>用途：</strong>日常拍摄、vlog、风景摄影</p>
+                    </div>
+                    <div class="bg-white dark:bg-gray-700 p-4 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-medium mb-2">镜头</h3>
+                        <ul class="list-disc list-inside ml-2">
+                            <li>适马 18-50mm f/2.8 DC DN Contemporary</li>
+                            <li>索尼 16-50mm f/3.5-5.6 OSS</li>
+                            <li>索尼 55-210mm f/4.5-6.3 OSS</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
             {imageData.length > 0 ? (
                 <div id="photography-gallery" class="grid grid-cols-1 md:grid-cols-2 gap-4" style="grid-auto-rows: 10px;">
                     {imageData.map((img, index) => (
