@@ -33,8 +33,12 @@ jobs:
         id: current-photos
         run: |
           if [ -f "public/photography.txt" ]; then
-            CURRENT=$(cat "public/photography.txt")
-            echo "current=$CURRENT" >> $GITHUB_OUTPUT
+            CURRENT="$(cat "public/photography.txt")"
+            {
+              echo "current<<__EOF__"
+              echo "$CURRENT"
+              echo "__EOF__"
+            } >> "$GITHUB_OUTPUT"
           else
             echo "current=" >> $GITHUB_OUTPUT
           fi
@@ -55,7 +59,11 @@ jobs:
           # 转换为每行一个URL的格式
           NEW_CONTENT=$(echo "$NEW_URLS" | sed 's/ /\n/g')
           
-          echo "new=$NEW_CONTENT" >> $GITHUB_OUTPUT
+          {
+            echo "new<<__EOF__"
+            echo "$NEW_CONTENT"
+            echo "__EOF__"
+          } >> "$GITHUB_OUTPUT"
         shell: bash
 
       - name: Compare and update
@@ -89,7 +97,7 @@ jobs:
               git add "public/photography.txt.backup"
             fi
             
-            git commit -m "Update photography.txt from imgchr album
+            git commit -m "Update photography.txt from imgchr album"
             
             # 推送更改
             git push
