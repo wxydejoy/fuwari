@@ -55,13 +55,12 @@ const mainPanelTop = siteConfig.banner.enable
 
 <!-- Banner -->
 {siteConfig.banner.enable && <div id="banner-wrapper" class={`absolute z-10 w-full transition duration-700 overflow-hidden`} style={`top: -${BANNER_HEIGHT_EXTEND}vh`}>
-    <div class="relative h-full overflow-hidden">
+    <div id="banner" class="relative h-full overflow-hidden">
         <!-- Banner carousel -->
         <div id="banner-carousel" class="relative h-full w-full">
             {Array.isArray(siteConfig.banner.src) ? 
                 siteConfig.banner.src.map((src, index) => (
                     <div 
-                        key={index} 
                         id={`banner-image-${index}`}
                         class:list={[
                             "object-cover h-full transition-all duration-1000 opacity-0 scale-105 absolute inset-0",

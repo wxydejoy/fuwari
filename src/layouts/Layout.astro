@@ -423,7 +423,7 @@ const setup = () => {
 			bodyElement!.classList.remove('is-home');
 		}
 	})
-	window.swup.hooks.on('visit:start', (visit: {to: {url: string}}) => {
+	window.swup.hooks.on('visit:start', (_visit: {to: {url: string}}) => {
 		// Remove the delay for the first time page load
 		document.documentElement.style.setProperty('--content-delay', '0ms')
 
