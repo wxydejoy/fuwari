@@ -30,9 +30,6 @@ export default defineConfig({
 	base: "/",
 	trailingSlash: "always",
 	prefetch: true,
-	image: {
-		domains: ["img.undf.top", "s41.ax1x.com"],
-	},
 	integrations: [
 		tailwind({
 			nesting: true,
