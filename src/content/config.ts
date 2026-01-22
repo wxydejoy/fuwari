@@ -21,7 +21,7 @@ const postsCollection = defineCollection({
 		}),
 });
 const specCollection = defineCollection({
-	schema: z.object({}),
+	schema: ({ image }) => z.object({}).passthrough(),
 });
 export const collections = {
 	posts: postsCollection,
