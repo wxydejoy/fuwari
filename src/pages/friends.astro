@@ -3,6 +3,7 @@
 import { getEntry } from "astro:content";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 import { siteConfig, profileConfig } from "../config";
+import { parseFriends } from "../utils/friends-parser";
 
 const friendsPost = await getEntry("spec", "friends");
 
@@ -12,48 +13,75 @@ if (!friendsPost) {
 
 // Parse friends data from markdown content
 const friendsContent = friendsPost.body;
-const friendRegex =
-	/####\s+([^\n]+)\n\s*-\s*(https?:\/\/[^\n]+)\n\s*-\s*(https?:\/\/[^\n]+)\n\s*-\s*([^\n]+)/g;
-const friends = [];
-let match;
-
-while ((match = friendRegex.exec(friendsContent)) !== null) {
-	friends.push({
-		name: match[1].trim(),
-		url: match[2].trim(),
-		avatar: match[3].trim(),
-		description: match[4].trim(),
-	});
-}
+const friends = parseFriends(friendsContent);
 ---
 <MainGridLayout title="友链" description="我的朋友们，优秀的博客推荐及友情链接申请。">
     <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
         <div class="card-base z-10 px-9 py-6 relative w-full ">
-            <h1 class="text-2xl font-bold mb-6">我的朋友们</h1>
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-2xl font-bold">我的朋友们</h1>
+                <span class="text-sm text-gray-500 dark:text-gray-400">
+                    共 {friends.length} 位
+                </span>
+            </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {friends.map((friend) => (
+            <!-- 搜索框 -->
+            <div class="mb-6">
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        id="friend-search"
+                        placeholder="搜索友链名称或描述..." 
+                        class="w-full px-4 py-2 pl-10 rounded-lg bg-white/70 dark:bg-gray-800/70 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/50 focus:border-[var(--primary)] transition-all"
+                    />
+                    <svg 
+                        class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                    >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+            </div>
+            
+            <!-- 友链网格 -->
+            <div id="friends-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {friends.map((friend, index) => (
                     <a 
                         href={friend.url} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        class="friend-card flex flex-col items-center p-6 rounded-[var(--radius-large)] bg-white/70 dark:bg-gray-800/70 hover:bg-white/90 dark:hover:bg-gray-800/90 transition-all duration-300 shadow-sm hover:shadow-md"
+                        class="friend-card flex flex-col items-center p-6 rounded-[var(--radius-large)] bg-white/70 dark:bg-gray-800/70 hover:bg-white/90 dark:hover:bg-gray-800/90 transition-all duration-300 shadow-sm hover:shadow-lg hover:scale-[1.02] hover:-translate-y-1"
+                        data-name={friend.name.toLowerCase()}
+                        data-description={friend.description.toLowerCase()}
                     >
                         <div class="relative w-24 h-24 mb-4">
                             <img 
                                 src={friend.avatar} 
                                 alt={friend.name} 
-                                class="w-full h-full object-cover rounded-full border-2 border-[var(--primary)]/30"
+                                class="friend-avatar w-full h-full object-cover rounded-full border-2 border-[var(--primary)]/30 transition-all duration-300"
+                                loading="lazy"
+                                onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%23e5e7eb\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%239ca3af\' font-size=\'14\'%3E头像%3C/text%3E%3C/svg%3E';"
                             />
                         </div>
                         
-                        <h3 class="text-xl font-bold mb-2 text-center">{friend.name}</h3>
+                        <h3 class="text-xl font-bold mb-2 text-center friend-name">{friend.name}</h3>
                         
-                        <p class="text-gray-600 dark:text-gray-300 text-center text-sm line-clamp-2">
+                        <p class="text-gray-600 dark:text-gray-300 text-center text-sm line-clamp-2 friend-description">
                             {friend.description}
                         </p>
                     </a>
                 ))}
+            </div>
+            
+            <!-- 空状态提示 -->
+            <div id="no-results" class="hidden text-center py-12 text-gray-500 dark:text-gray-400">
+                <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <p class="text-lg font-medium mb-2">未找到匹配的友链</p>
+                <p class="text-sm">请尝试其他关键词</p>
             </div>
 
             <!-- 友链申请部分 -->
@@ -86,10 +114,10 @@ while ((match = friendRegex.exec(friendsContent)) !== null) {
                 <div class="mb-4">
                     <h3 class="text-lg font-semibold mb-2">申请邮箱：</h3>
                     <a 
-                        href="mailto:weiekko@gamil.com?subject=友链申请&body=网站名称：%0A网站地址：%0A网站头像：%0A网站描述：%0A" 
+                        href="mailto:weiekko@gmail.com?subject=友链申请&body=网站名称：%0A网站地址：%0A网站头像：%0A网站描述：%0A" 
                         class="text-[var(--primary)] hover:underline font-medium"
                     >
-                        weiekko@gamil.com
+                        weiekko@gmail.com
                     </a>
                 </div>
                 
@@ -105,3 +133,80 @@ while ((match = friendRegex.exec(friendsContent)) !== null) {
         </div>
     </div>
 </MainGridLayout>
+
+<script>
+    // 搜索功能
+    (function() {
+        const searchInput = document.getElementById('friend-search');
+        const friendsGrid = document.getElementById('friends-grid');
+        const noResults = document.getElementById('no-results');
+        const friendCards = document.querySelectorAll('.friend-card');
+        
+        if (!searchInput || !friendsGrid || !noResults) return;
+        
+        function filterFriends() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            let visibleCount = 0;
+            
+            friendCards.forEach(card => {
+                const name = card.getAttribute('data-name') || '';
+                const description = card.getAttribute('data-description') || '';
+                
+                if (searchTerm === '' || name.includes(searchTerm) || description.includes(searchTerm)) {
+                    card.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // 显示/隐藏空状态提示
+            if (visibleCount === 0 && searchTerm !== '') {
+                noResults.classList.remove('hidden');
+                friendsGrid.classList.add('hidden');
+            } else {
+                noResults.classList.add('hidden');
+                friendsGrid.classList.remove('hidden');
+            }
+        }
+        
+        // 监听输入事件
+        searchInput.addEventListener('input', filterFriends);
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                searchInput.value = '';
+                filterFriends();
+                searchInput.blur();
+            }
+        });
+    })();
+    
+    // 图片加载错误处理（备用方案，因为已经在 onerror 中处理了）
+    document.addEventListener('DOMContentLoaded', function() {
+        const avatars = document.querySelectorAll('.friend-avatar');
+        avatars.forEach(avatar => {
+            avatar.addEventListener('error', function() {
+                if (!this.src.includes('data:image/svg+xml')) {
+                    this.src = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%23e5e7eb\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%239ca3af\' font-size=\'14\'%3E头像%3C/text%3E%3C/svg%3E';
+                }
+            });
+        });
+    });
+</script>
+
+<style>
+    .friend-card {
+        will-change: transform;
+    }
+    
+    .friend-card:hover .friend-avatar {
+        transform: scale(1.1);
+        border-color: var(--primary);
+    }
+    
+    @media (max-width: 768px) {
+        .friend-card {
+            padding: 1rem;
+        }
+    }
+</style>

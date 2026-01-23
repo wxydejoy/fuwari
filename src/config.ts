@@ -9,7 +9,7 @@ import { LinkPreset } from "./types/config";
 
 export const siteConfig: SiteConfig = {
 	title: "沐印",
-	subtitle: "这里是漂泊者的休憩之地，也是守岸人的灯塔。记录嵌入式开发的点滴，分享摄影眼中的世界。在这漫长的数字旅途中，我试图用文字抵抗遗忘，用开源连接彼此。欢迎光临沐印，愿我们都能在岁月中找到属于自己的答案。",
+	subtitle: "这里是漂泊者的休憩之地，也是守岸人的灯塔。在这漫长的数字旅途中，我试图用文字抵抗遗忘，用开源连接彼此。欢迎光临沐印，愿我们都能在岁月中找到属于自己的答案。",
 	lang: "zh_CN", // Language code, e.g. "en", "zh_CN", "ja", etc.
 	themeColor: {
 		hue: 210, // Default hue for the theme color, from 0 to 360. e.g. red: 0, teal: 200, cyan: 250, pink: 345
