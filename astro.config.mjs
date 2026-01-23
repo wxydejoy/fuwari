@@ -116,7 +116,13 @@ export default defineConfig({
 			parseDirectiveNode,
 		],
 		rehypePlugins: [
-			rehypeKatex,
+			[
+				rehypeKatex,
+				{
+					strict: false,
+					throwOnError: false,
+				},
+			],
 			rehypeSlug,
 			rehypeExternalImages, // 处理外部图片，避免构建时优化
 			[
