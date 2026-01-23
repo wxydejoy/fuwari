@@ -34,3 +34,6 @@ yarn.lock
 .trae/
 
 src/content/posts/
+
+# image cache (optional, can be committed for CI builds)
+# public/photography-cache.json

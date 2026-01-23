@@ -12,6 +12,7 @@ interface Props {
 
 import { Image } from "astro:assets";
 import { url } from "../../utils/url-utils";
+import { logger } from "../../utils/logger";
 
 const { id, src, alt, position = "center", basePath = "/" } = Astro.props;
 const className = Astro.props.class;
@@ -26,22 +27,29 @@ const isPublic = src.startsWith("/");
 
 // TODO temporary workaround for images dynamic import
 // https://github.com/withastro/astro/issues/3373
-// biome-ignore lint/suspicious/noImplicitAnyLet: <check later>
-let img;
+let img: ImageMetadata | undefined;
 if (isLocal) {
 	const files = import.meta.glob<ImageMetadata>("../../**", {
 		import: "default",
 	});
-	let normalizedPath = path
+	const normalizedPath = path
 		.normalize(path.join("../../", basePath, src))
 		.replace(/\\/g, "/");
 	const file = files[normalizedPath];
 	if (!file) {
-		console.error(
-			`\n[ERROR] Image file not found: ${normalizedPath.replace("../../", "src/")}`,
+		logger.error(
+			`Image file not found: ${normalizedPath.replace("../../", "src/")}`,
 		);
+	} else {
+		try {
+			img = await file();
+		} catch (error) {
+			logger.error(
+				`Failed to load image: ${normalizedPath.replace("../../", "src/")}`,
+				error,
+			);
+		}
 	}
-	img = await file();
 }
 
 const imageClass = "w-full h-full object-cover";

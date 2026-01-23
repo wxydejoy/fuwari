@@ -29,18 +29,6 @@ jobs:
           repository: 'post'
           access-token: ${{ secrets.CLONE }}
           
-      - name: 删除_posts文件夹下的.git文件等
-        run: |
-          mkdir -p src/content/posts/ 
-          mv post/* src/content/posts/
-          rm -rf src/content/posts/.git
-          rm -rf src/content/posts/.github
-          find src/content/posts -type f -name '*.md' -exec sed -i 's/date: /published: /g' {} +
-          find src/content/posts -type f -name '*.md' -exec sed -i 's/cover: /image: /g' {} +
-          find src/content/posts -type f -name '*.md' -exec sed -i 's/ [0-9]\{2\}:[0-9]\{2\}:[0-9]\{2\}//g' {} +
-          find src/content/posts -type f -name '*.md' -exec sed -i 's/categories: /category: /g' {} +
-
-    
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -52,10 +40,24 @@ jobs:
           cache: true
 
       - name: Install dependencies
-        run: pnpm install 
+        run: pnpm install
 
+      - name: 处理文章并删除.git文件等
+        run: |
+          mkdir -p src/content/posts/ 
+          if [ -d "post" ] && [ "$(ls -A post)" ]; then
+            mv post/* src/content/posts/ 2>/dev/null || true
+          fi
+          rm -rf src/content/posts/.git
+          rm -rf src/content/posts/.github
+          
+          # 使用 Node.js 脚本处理文章格式转换
+          node scripts/process-posts.js || echo "Warning: Failed to process posts, continuing..."
+
+    
       - name: Build the site
         run: pnpm astro build
+        continue-on-error: false
 
 
       - name: Deploy to GitHub Pages

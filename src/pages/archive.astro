@@ -8,9 +8,6 @@ import { getSortedPostsList, getTagList } from "../utils/content-utils";
 
 const sortedPostsList = await getSortedPostsList();
 const tagList = await getTagList();
-
-// Debug: Check tagList content
-console.log('TagList:', tagList);
 ---
 
 <MainGridLayout title={i18n(I18nKey.archive)} description="所有文章归档，按时间顺序排列，方便查找过往内容。">

@@ -82,7 +82,10 @@ const search = (keyword: string, isDesktop: boolean): void => {
 
     setPanelVisibility(result.length > 0, isDesktop);
   } catch (error) {
-    console.error("Search error:", error);
+    // 在生产环境中，静默处理搜索错误，避免影响用户体验
+    if (import.meta.env.DEV) {
+      console.error("Search error:", error);
+    }
     result = [];
     setPanelVisibility(false, isDesktop);
   } finally {
@@ -108,12 +111,16 @@ onMount(async () => {
     if (response.ok) {
       searchData = await response.json();
       initialized = true;
-      console.log("Search data loaded successfully:", searchData.length, "posts");
+      if (import.meta.env.DEV) {
+        console.log("Search data loaded successfully:", searchData.length, "posts");
+      }
     } else {
-      throw new Error("Failed to load search data");
+      throw new Error(`Failed to load search data: ${response.status} ${response.statusText}`);
     }
   } catch (error) {
-    console.error("Error initializing search:", error);
+    if (import.meta.env.DEV) {
+      console.error("Error initializing search:", error);
+    }
     // 开发环境下使用模拟数据
     if (import.meta.env.DEV) {
       searchData = [

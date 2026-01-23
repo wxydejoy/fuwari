@@ -47,21 +47,35 @@ jobs:
       - name: Fetch photography album from imgchr
         id: fetch-photos
         run: |
+          set -e
           echo "Fetching photography album from imgchr..."
-          # 获取图床相册页面
-          RESPONSE=$(curl -s "https://imgchr.com/album/vkBKs")
           
-          # 提取图片链接（根据实际页面结构调整正则表达式）
-          # 这里假设图片链接在img标签中
-          # 移除.md部分以获取正确的图片链接
-          NEW_URLS=$(echo "$RESPONSE" | grep -oP 'https://[^"]*\.jpg[^"]*' | sed 's/\.md\.jpg/.jpg/g' | sort -u)
+          # 获取图床相册页面，添加超时和错误处理
+          RESPONSE=$(curl -s --max-time 30 --fail-with-body "https://imgchr.com/album/vkBKs" || echo "")
           
-          # 转换为每行一个URL的格式
-          NEW_CONTENT=$(echo "$NEW_URLS" | sed 's/ /\n/g')
+          if [ -z "$RESPONSE" ]; then
+            echo "Error: Failed to fetch album page"
+            exit 1
+          fi
+          
+          # 提取图片链接，使用更安全的正则表达式
+          # 只匹配 https:// 开头的完整 URL
+          NEW_URLS=$(echo "$RESPONSE" | grep -oP 'https://[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]*\.[a-zA-Z]{2,}[^"<>\s]*\.(jpg|jpeg|png|webp)' | sort -u)
+          
+          # 验证 URL 格式
+          VALID_URLS=""
+          while IFS= read -r url; do
+            if [[ "$url" =~ ^https://[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]*\.[a-zA-Z]{2,} ]]; then
+              VALID_URLS="${VALID_URLS}${url}\n"
+            fi
+          done <<< "$NEW_URLS"
+          
+          # 转换为每行一个URL的格式，移除末尾空行
+          NEW_CONTENT=$(echo -e "$VALID_URLS" | sed '/^$/d')
           
           {
             echo "new<<__EOF__"
-            echo "$NEW_CONTENT"
+            echo -e "$NEW_CONTENT"
             echo "__EOF__"
           } >> "$GITHUB_OUTPUT"
         shell: bash
@@ -69,8 +83,15 @@ jobs:
       - name: Compare and update
         id: compare-update
         run: |
+          set -e
           CURRENT="${{ steps.current-photos.outputs.current }}"
           NEW="${{ steps.fetch-photos.outputs.new }}"
+          
+          # 检查是否成功获取新内容
+          if [ -z "$NEW" ]; then
+            echo "Error: No new content fetched"
+            exit 1
+          fi
           
           echo "Current content length: ${#CURRENT}"
           echo "New content length: ${#NEW}"
@@ -85,7 +106,7 @@ jobs:
             fi
             
             # 更新文件
-            echo "$NEW" > "public/photography.txt"
+            echo -e "$NEW" > "public/photography.txt"
             
             # 设置Git配置
             git config --local user.email "action@github.com"
@@ -97,10 +118,10 @@ jobs:
               git add "public/photography.txt.backup"
             fi
             
-            git commit -m "Update photography.txt from imgchr album"
+            git commit -m "chore: Update photography.txt from imgchr album [skip ci]" || echo "No changes to commit"
             
             # 推送更改
-            git push
+            git push || echo "Warning: Failed to push changes"
             
             echo "Updated successfully!"
           else

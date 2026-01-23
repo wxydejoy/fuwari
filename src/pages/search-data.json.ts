@@ -23,7 +23,10 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error('Error generating search data:', error);
+    // 使用 logger 记录错误（如果可用），否则使用 console.error
+    if (import.meta.env.DEV) {
+      console.error('Error generating search data:', error);
+    }
     return new Response(JSON.stringify({ error: 'Failed to generate search data' }), {
       status: 500,
       headers: {

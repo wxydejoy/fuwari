@@ -10,9 +10,10 @@ async function getRawSortedPosts() {
 	});
 
 	const sorted = allBlogPosts.sort((a, b) => {
-		const dateA = new Date(a.data.published);
-		const dateB = new Date(b.data.published);
-		return dateA > dateB ? -1 : 1;
+		const dateA = new Date(a.data.published).getTime();
+		const dateB = new Date(b.data.published).getTime();
+		// 降序排列（最新的在前）
+		return dateB - dateA;
 	});
 	return sorted;
 }
@@ -56,10 +57,13 @@ export async function getTagList(): Promise<Tag[]> {
 		return import.meta.env.PROD ? data.draft !== true : true;
 	});
 
-	const countMap: { [key: string]: number } = {};
-	allBlogPosts.forEach((post: { data: { tags: string[] } }) => {
-		post.data.tags.forEach((tag: string) => {
-			if (!countMap[tag]) countMap[tag] = 0;
+	const countMap: Record<string, number> = {};
+	allBlogPosts.forEach((post) => {
+		const tags = post.data.tags || [];
+		tags.forEach((tag: string) => {
+			if (!countMap[tag]) {
+				countMap[tag] = 0;
+			}
 			countMap[tag]++;
 		});
 	});
@@ -82,11 +86,11 @@ export async function getCategoryList(): Promise<Category[]> {
 	const allBlogPosts = await getCollection<"posts">("posts", ({ data }) => {
 		return import.meta.env.PROD ? data.draft !== true : true;
 	});
-	const count: { [key: string]: number } = {};
-	allBlogPosts.forEach((post: { data: { category: string | null } }) => {
+	const count: Record<string, number> = {};
+	allBlogPosts.forEach((post) => {
 		if (!post.data.category) {
 			const ucKey = i18n(I18nKey.uncategorized);
-			count[ucKey] = count[ucKey] ? count[ucKey] + 1 : 1;
+			count[ucKey] = (count[ucKey] || 0) + 1;
 			return;
 		}
 
@@ -95,7 +99,7 @@ export async function getCategoryList(): Promise<Category[]> {
 				? post.data.category.trim()
 				: String(post.data.category).trim();
 
-		count[categoryName] = count[categoryName] ? count[categoryName] + 1 : 1;
+		count[categoryName] = (count[categoryName] || 0) + 1;
 	});
 
 	const lst = Object.keys(count).sort((a, b) => {

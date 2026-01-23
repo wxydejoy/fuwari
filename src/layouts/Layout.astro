@@ -380,7 +380,10 @@ function showBanner() {
 
 	const banner = document.getElementById('banner');
 	if (!banner) {
-		console.error('Banner element not found');
+		// 仅在开发环境输出错误
+		if (import.meta.env.DEV) {
+			console.error('Banner element not found');
+		}
 		return;
 	}
 
@@ -538,18 +541,18 @@ let backToTopBtn = document.getElementById('back-to-top-btn');
 			let currentIndex = 0;
 			const interval = siteConfig.banner.carousel?.interval || 5000;
 
-			console.log('Banner carousel initialized with', imageWrappers.length, 'images');
+			// 仅在开发环境输出调试信息
+			if (import.meta.env.DEV) {
+				console.log('Banner carousel initialized with', imageWrappers.length, 'images');
+			}
 
 			function showNextImage() {
-				console.log('Showing next image from index', currentIndex);
-				
 				// Hide current image wrapper
 				imageWrappers[currentIndex].classList.remove('opacity-100', 'scale-100');
 				imageWrappers[currentIndex].classList.add('opacity-0', 'scale-105');
 
 				// Move to next image wrapper
 				currentIndex = (currentIndex + 1) % imageWrappers.length;
-				console.log('Next image index:', currentIndex);
 
 				// Show next image wrapper
 				imageWrappers[currentIndex].classList.remove('opacity-0', 'scale-105');
@@ -562,7 +565,6 @@ let backToTopBtn = document.getElementById('back-to-top-btn');
 
 		// Initialize banner carousel with a small delay to ensure all elements are loaded
 		function delayedInit() {
-			console.log('Attempting to initialize banner carousel...');
 			initBannerCarousel();
 		}
 

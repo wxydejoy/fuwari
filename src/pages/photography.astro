@@ -1,12 +1,12 @@
 ---
-
 import fs from "node:fs/promises";
 import path from "node:path";
-import { Image, getImage } from "astro:assets";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
+import { filterValidUrls } from "../utils/url-validator";
 import 'photoswipe/dist/photoswipe.css';
 
 // Read the photography.txt file during build time
+// 完全客户端渲染，不依赖构建时获取图片尺寸
 let imageUrls: string[] = [];
 
 try {
@@ -14,29 +14,20 @@ try {
 	const content = await fs.readFile(filePath, "utf-8");
 
 	// Parse the file, each line is an image URL
-	imageUrls = content
+	const rawUrls = content
 		.split("\n")
 		.map((line) => line.trim())
 		.filter((line) => line.length > 0 && line.startsWith("http"));
+	
+	// 验证和过滤 URL
+	imageUrls = filterValidUrls(rawUrls);
 } catch (error) {
-	console.error("Error reading photography.txt:", error);
+	// 使用 logger 如果可用，否则使用 console
+	if (typeof console !== "undefined") {
+		console.error("Error reading photography.txt:", error);
+	}
+	imageUrls = [];
 }
-
-const imageData = await Promise.all(
-	imageUrls.map(async (url) => {
-		try {
-			const optimized = await getImage({ src: url, inferSize: true });
-			return {
-				url,
-				width: optimized.attributes.width as number,
-				height: optimized.attributes.height as number,
-			};
-		} catch (e) {
-			console.error(`Failed to get size for ${url}`, e);
-			return { url, width: 800, height: 600 }; // Fallback
-		}
-	}),
-);
 ---
 <MainGridLayout title="摄影" description="我的摄影作品集，记录生活中的点滴时刻。">
     <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
@@ -66,26 +57,24 @@ const imageData = await Promise.all(
                 </div>
             </div>
             
-            {imageData.length > 0 ? (
-                <div id="photography-gallery" class="grid grid-cols-1 md:grid-cols-2 gap-4" style="grid-auto-rows: 10px;">
-                    {imageData.map((img, index) => (
+            {imageUrls.length > 0 ? (
+                <div id="photography-gallery" class="columns-1 md:columns-2 gap-4">
+                    {imageUrls.map((url, index) => (
                         <div 
-                            class="photography-card relative overflow-hidden bg-gray-200 dark:bg-gray-800 shadow-sm hover:shadow-md"
-                            style={`grid-row: span ${Math.max(10, Math.ceil((img.height / img.width) * 20))};`}
+                            class="photography-card break-inside-avoid mb-4 relative overflow-hidden bg-gray-200 dark:bg-gray-800 shadow-sm rounded-lg"
+                            data-image-url={url}
+                            data-image-index={index}
                         >
                             <a 
-                                href={img.url} 
+                                href={url} 
                                 class="block w-full h-full cursor-zoom-in photography-link"
-                                data-pswp-width={img.width}
-                                data-pswp-height={img.height}
                                 target="_blank"
+                                rel="noopener noreferrer"
                             >
-                                <Image 
-                                    src={img.url} 
-                                    width={img.width}
-                                    height={img.height}
+                                <img 
+                                    src={url} 
                                     alt={`摄影作品 ${index + 1}`} 
-                                    class="w-full h-full object-cover hover:scale-105 photography-image"
+                                    class="w-full h-auto photography-image"
                                     loading="lazy"
                                     decoding="async"
                                 />
@@ -107,8 +96,47 @@ const imageData = await Promise.all(
     .photography-image {
         opacity: 1;
     }
+    
+    .photography-card {
+        display: block;
+        width: 100%;
+    }
+    
+    /* 确保图片容器正确显示 */
+    #photography-gallery {
+        display: block;
+    }
 </style>
 
 <script>
-    // No animation initialization needed
+    // 客户端动态设置图片尺寸和 PhotoSwipe 数据
+    document.addEventListener('DOMContentLoaded', () => {
+        const gallery = document.getElementById('photography-gallery');
+        if (!gallery) return;
+
+        const cards = gallery.querySelectorAll('.photography-card');
+        
+        cards.forEach((card) => {
+            const img = card.querySelector('img');
+            if (!img) return;
+
+            const link = card.querySelector('a.photography-link');
+            if (!link) return;
+
+            // 图片加载完成后设置 PhotoSwipe 数据属性
+            const setPhotoSwipeData = () => {
+                if (img.naturalWidth && img.naturalHeight) {
+                    link.setAttribute('data-pswp-width', img.naturalWidth.toString());
+                    link.setAttribute('data-pswp-height', img.naturalHeight.toString());
+                }
+            };
+
+            img.addEventListener('load', setPhotoSwipeData);
+
+            // 如果图片已经加载完成（缓存）
+            if (img.complete && img.naturalWidth && img.naturalHeight) {
+                setPhotoSwipeData();
+            }
+        });
+    });
 </script>

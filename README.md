@@ -14,6 +14,31 @@
 ### 部署
 - 在推送代码前，运行 `pnpm build` 检查是否有构建错误。
 - 确保 `src/config.ts` 中引用的所有资源都可以访问。
+- **图片优化**: 摄影页面和文章内的外部图片现在使用客户端动态加载，无需在构建时访问外部图片，构建更快更稳定。
+
+### 一键更新脚本 🚀
+
+使用 `pnpm update-and-deploy` 可以一次性完成：
+1. 从 GitHub 仓库更新文章库
+2. 处理文章格式转换
+3. 生成图片尺寸缓存
+4. 提交所有更改并推送到远程仓库
+
+```bash
+# 基本使用
+pnpm update-and-deploy
+
+# 跳过推送（只提交，不推送）
+pnpm update-and-deploy --skip-push
+
+# 跳过图片缓存生成
+pnpm update-and-deploy --skip-cache
+
+# 自定义提交信息
+pnpm update-and-deploy --commit-message "feat: 更新文章"
+```
+
+详细使用说明请查看 [UPDATE_SCRIPT.md](docs/UPDATE_SCRIPT.md)
 
 ### 🤖 CI/CD 自动化工作流 (GitHub Actions)
 

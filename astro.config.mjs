@@ -23,6 +23,7 @@ import { GithubCardComponent } from "./src/plugins/rehype-component-github-card.
 import { parseDirectiveNode } from "./src/plugins/remark-directive-rehype.js";
 import { remarkExcerpt } from "./src/plugins/remark-excerpt.js";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
+import { rehypeExternalImages } from "./src/plugins/rehype-external-images.mjs";
 
 // https://astro.build/config
 export default defineConfig({
@@ -117,6 +118,7 @@ export default defineConfig({
 		rehypePlugins: [
 			rehypeKatex,
 			rehypeSlug,
+			rehypeExternalImages, // 处理外部图片，避免构建时优化
 			[
 				rehypeComponents,
 				{

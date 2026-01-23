@@ -1,7 +1,7 @@
 {
   "name": "fuwari",
   "type": "module",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
@@ -15,6 +15,9 @@
     "format": "biome format --write ./src",
     "lint": "biome check --write ./src",
     "preinstall": "npx only-allow pnpm",
+    "generate-image-cache": "node scripts/generate-image-cache.js",
+    "update-and-deploy": "node scripts/update-and-deploy.js",
+    "update": "node scripts/update-and-deploy.js",
     "bump:version": "node scripts/bump-version.js",
     "bump:major": "node scripts/bump-version.js major",
     "bump:minor": "node scripts/bump-version.js minor",
