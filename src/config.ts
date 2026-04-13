@@ -9,7 +9,7 @@ import { LinkPreset } from "./types/config";
 
 export const siteConfig: SiteConfig = {
 	title: "沐印",
-	subtitle: "这里是漂泊者的休憩之地，也是守岸人的灯塔。在这漫长的数字旅途中，我试图用文字抵抗遗忘，用开源连接彼此。欢迎光临沐印，愿我们都能在岁月中找到属于自己的答案。",
+	subtitle: "漂泊者的休憩之地，守岸人的灯塔。用文字抵抗遗忘，用开源连接彼此。",
 	lang: "zh_CN", // Language code, e.g. "en", "zh_CN", "ja", etc.
 	themeColor: {
 		hue: 210, // Default hue for the theme color, from 0 to 360. e.g. red: 0, teal: 200, cyan: 250, pink: 345
@@ -19,10 +19,10 @@ export const siteConfig: SiteConfig = {
 		enable: true,
 		src: [
 			"https://img.undf.top/ob/616b27741d92418019d973e0e79add48.png",
-			"https://s41.ax1x.com/2026/01/17/pZs7tAS.jpg",
-			"https://s41.ax1x.com/2026/01/17/pZs7cAU.jpg",
-			"https://s41.ax1x.com/2026/01/17/pZs7sBV.png",
-			"https://s41.ax1x.com/2026/01/17/pZs7gNF.jpg",
+			"https://img.undf.top/ob/pZs7tAS.jpg",
+			"https://img.undf.top/ob/pZs7cAU.jpg",
+			"https://img.undf.top/ob/pZs7sBV.png",
+			"https://img.undf.top/ob/pZs7gNF.jpg",
 		], // Support multiple images for carousel
 		position: "center", // Equivalent to object-position, only supports "top", "center", "bottom". "center" by default
 		credit: {
@@ -37,7 +37,7 @@ export const siteConfig: SiteConfig = {
 	},
 	toc: {
 		enable: true, // Display the table of contents on the right side of the post
-		depth: 2, // Maximum heading depth to show in the table, from 1 to 3
+		depth: 3, // Maximum heading depth to show in the table, from 1 to 3
 	},
 	favicon: [
 		// Leave this array empty to use the default favicon
@@ -74,23 +74,16 @@ export const profileConfig: ProfileConfig = {
 	name: "沐印",
 	bio: "这里是漂泊者的休憩之地，也是守岸人的灯塔。",
 	links: [
-		// {
-		// 	name: "Twitter",
-		// 	icon: "fa6-brands:twitter", // Visit https://icones.js.org/ for icon codes
-		// 	// You will need to install the corresponding icon set if it"s not already included
-		// 	// `pnpm add @iconify-json/<icon-set-name>`
-		// 	url: "https://twitter.com",
-		// },
-		// {
-		// 	name: "Steam",
-		// 	icon: "fa6-brands:steam",
-		// 	url: "https://store.steampowered.com",
-		// },
-		// {
-		// 	name: "GitHub",
-		// 	icon: "fa6-brands:github",
-		// 	url: "https://github.com/saicaca/fuwari",
-		// },
+		{
+			name: "GitHub",
+			icon: "fa6-brands:github",
+			url: "https://github.com/wxydejoy",
+		},
+		{
+			name: "Bilibili",
+			icon: "fa6-brands:bilibili",
+			url: "https://space.bilibili.com/380525356",
+		},
 	],
 };
 
