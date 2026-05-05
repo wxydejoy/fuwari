@@ -60,7 +60,8 @@ jobs:
           
           # 提取图片链接，使用更安全的正则表达式
           # 只匹配 https:// 开头的完整 URL
-          NEW_URLS=$(echo "$RESPONSE" | grep -oP 'https://[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]*\.[a-zA-Z]{2,}[^"<>\s]*\.(jpg|jpeg|png|webp)' | sort -u)
+          # 排除图床页面里的系统资源（favicon、logo 等），见 public/photography.txt 历史误抓项
+          NEW_URLS=$(echo "$RESPONSE" | grep -oP 'https://[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9]*\.[a-zA-Z]{2,}[^"<>\s]*\.(jpg|jpeg|png|webp)' | sort -u | grep -v 'imgchr\.com/content/images/system/' || true)
           
           # 验证 URL 格式
           VALID_URLS=""

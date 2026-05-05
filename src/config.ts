@@ -19,10 +19,6 @@ export const siteConfig: SiteConfig = {
 		enable: true,
 		src: [
 			"https://img.undf.top/ob/616b27741d92418019d973e0e79add48.png",
-			"https://img.undf.top/ob/pZs7tAS.jpg",
-			"https://img.undf.top/ob/pZs7cAU.jpg",
-			"https://img.undf.top/ob/pZs7sBV.png",
-			"https://img.undf.top/ob/pZs7gNF.jpg",
 		], // Support multiple images for carousel
 		position: "center", // Equivalent to object-position, only supports "top", "center", "bottom". "center" by default
 		credit: {
