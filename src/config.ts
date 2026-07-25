@@ -8,7 +8,7 @@ import type {
 import { LinkPreset } from "./types/config";
 
 export const siteConfig: SiteConfig = {
-	title: "沐印",
+	title: "小魏的个人分享",
 	subtitle: "漂泊者的休憩之地，守岸人的灯塔。用文字抵抗遗忘，用开源连接彼此。",
 	lang: "zh_CN", // Language code, e.g. "en", "zh_CN", "ja", etc.
 	themeColor: {
@@ -67,7 +67,7 @@ export const navBarConfig: NavBarConfig = {
 
 export const profileConfig: ProfileConfig = {
 	avatar: "https://img.undf.top/ob/6667b59a3589d70694579a2fddce4ddc.png", // Relative to the /src directory. Relative to the /public directory if it starts with "/"
-	name: "沐印",
+	name: "小魏的个人分享",
 	bio: "这里是漂泊者的休憩之地，也是守岸人的灯塔。",
 	links: [
 		{

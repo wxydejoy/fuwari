@@ -3,9 +3,13 @@ import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import { getCategoryUrl } from "@utils/url-utils.ts";
 
+// Hide all posts from the site (set to false to show posts again)
+const HIDE_ALL_POSTS = true;
+
 // // Retrieve posts and sort them by publication date
 async function getRawSortedPosts() {
 	const allBlogPosts = await getCollection("posts", ({ data }) => {
+		if (HIDE_ALL_POSTS) return false;
 		return data.draft !== true;
 	});
 
@@ -54,6 +58,7 @@ export type Tag = {
 
 export async function getTagList(): Promise<Tag[]> {
 	const allBlogPosts = await getCollection<"posts">("posts", ({ data }) => {
+		if (HIDE_ALL_POSTS) return false;
 		return data.draft !== true;
 	});
 
@@ -84,6 +89,7 @@ export type Category = {
 
 export async function getCategoryList(): Promise<Category[]> {
 	const allBlogPosts = await getCollection<"posts">("posts", ({ data }) => {
+		if (HIDE_ALL_POSTS) return false;
 		return data.draft !== true;
 	});
 	const count: Record<string, number> = {};

@@ -4,8 +4,9 @@ import path from 'path';
 
 async function generateSearchIndex() {
   try {
-    // 获取所有文章数据
-    const posts = await getCollection('posts', (entry) => !entry.data.draft);
+    // Hide all posts from search (keep in sync with src/utils/content-utils.ts)
+    const HIDE_ALL_POSTS = true;
+    const posts = await getCollection('posts', (entry) => !HIDE_ALL_POSTS && !entry.data.draft);
     
     // 准备搜索数据
     const searchData = posts.map(post => ({

@@ -1,13 +1,13 @@
-import { getCollection } from 'astro:content';
+import { getSortedPostsList } from '@utils/content-utils';
 
 export async function GET() {
   try {
-    // 获取所有文章数据
-    const posts = await getCollection('posts', (entry) => !entry.data.draft);
+    // 获取所有文章数据（遵循 content-utils 中的隐藏/草稿过滤）
+    const posts = await getSortedPostsList();
     
     // 准备搜索数据
     const searchData = posts.map(post => ({
-      id: post.id,
+      id: post.slug,
       slug: post.slug,
       title: post.data.title,
       description: post.data.description,
