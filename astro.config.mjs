@@ -27,7 +27,7 @@ import { rehypeExternalImages } from "./src/plugins/rehype-external-images.mjs";
 
 // https://astro.build/config
 export default defineConfig({
-	site: "https://undf.top/",
+	site: "https://undf.cn/",
 	base: "/",
 	trailingSlash: "always",
 	prefetch: true,
