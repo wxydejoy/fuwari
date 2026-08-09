@@ -14,7 +14,7 @@ const ALLOWED_PROTOCOLS = ["http:", "https:"];
  */
 const ALLOWED_HOSTS: string[] = [
 	// 添加允许的域名，例如：
-	// "img.undf.top",
+	// "i.undf.cn",
 	// "imgchr.com",
 	// "s41.ax1x.com",
 ];

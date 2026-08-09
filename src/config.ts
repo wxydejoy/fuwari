@@ -18,7 +18,7 @@ export const siteConfig: SiteConfig = {
 	banner: {
 		enable: true,
 		src: [
-			"https://img.undf.top/ob/616b27741d92418019d973e0e79add48.png",
+			"https://i.undf.cn/ob/616b27741d92418019d973e0e79add48.png",
 		], // Support multiple images for carousel
 		position: "center", // Equivalent to object-position, only supports "top", "center", "bottom". "center" by default
 		credit: {
@@ -66,7 +66,7 @@ export const navBarConfig: NavBarConfig = {
 };
 
 export const profileConfig: ProfileConfig = {
-	avatar: "https://img.undf.top/ob/6667b59a3589d70694579a2fddce4ddc.png", // Relative to the /src directory. Relative to the /public directory if it starts with "/"
+	avatar: "https://i.undf.cn/ob/6667b59a3589d70694579a2fddce4ddc.png", // Relative to the /src directory. Relative to the /public directory if it starts with "/"
 	name: "沐沐小站",
 	bio: "这里是漂泊者的休憩之地，也是守岸人的灯塔。",
 	links: [

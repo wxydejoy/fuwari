@@ -176,7 +176,7 @@ import { isValidUrl, filterValidUrls } from "@utils/url-validator";
 
 // 在 url-validator.ts 中配置允许的主机
 const ALLOWED_HOSTS = [
-  "img.undf.top",
+  "i.undf.cn",
   "imgchr.com",
   // 添加更多允许的域名
 ];
