@@ -1,18 +1,20 @@
 import { type CollectionEntry, getCollection } from "astro:content";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
+import { visiblePostTitles } from "src/config";
 import { getCategoryUrl } from "@utils/url-utils.ts";
 
-// Hide all posts from the site (set to false to show posts again)
-const HIDE_ALL_POSTS = true;
+function isPostVisible(data: CollectionEntry<"posts">["data"]): boolean {
+	if (data.draft === true) return false;
+	if (visiblePostTitles) return visiblePostTitles.has(data.title);
+	return true;
+}
 
 // // Retrieve posts and sort them by publication date
 async function getRawSortedPosts() {
 	const allBlogPosts = await getCollection("posts", ({ data }) => {
-		if (HIDE_ALL_POSTS) return false;
-		return data.draft !== true;
+		return isPostVisible(data);
 	});
-
 	const sorted = allBlogPosts.sort((a, b) => {
 		const dateA = new Date(a.data.published).getTime();
 		const dateB = new Date(b.data.published).getTime();
@@ -58,10 +60,8 @@ export type Tag = {
 
 export async function getTagList(): Promise<Tag[]> {
 	const allBlogPosts = await getCollection<"posts">("posts", ({ data }) => {
-		if (HIDE_ALL_POSTS) return false;
-		return data.draft !== true;
+		return isPostVisible(data);
 	});
-
 	const countMap: Record<string, number> = {};
 	allBlogPosts.forEach((post) => {
 		const tags = post.data.tags || [];
@@ -89,8 +89,7 @@ export type Category = {
 
 export async function getCategoryList(): Promise<Category[]> {
 	const allBlogPosts = await getCollection<"posts">("posts", ({ data }) => {
-		if (HIDE_ALL_POSTS) return false;
-		return data.draft !== true;
+		return isPostVisible(data);
 	});
 	const count: Record<string, number> = {};
 	allBlogPosts.forEach((post) => {
