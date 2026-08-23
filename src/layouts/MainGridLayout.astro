@@ -2,11 +2,9 @@
 import BackToTop from "@components/control/BackToTop.astro";
 import Footer from "@components/Footer.astro";
 import Navbar from "@components/Navbar.astro";
-import NavbarScrollBehavior from "../components/NavbarScrollBehavior.svelte";
 import type { MarkdownHeading } from "astro";
 import { Icon } from "astro-icon/components";
 import ImageWrapper from "../components/misc/ImageWrapper.astro";
-import SideBar from "@components/widget/SideBar.astro";
 import TOC from "../components/widget/TOC.astro";
 import { siteConfig } from "../config";
 import {
@@ -46,11 +44,10 @@ const mainPanelTop = siteConfig.banner.enable
 
 <!-- Navbar -->
 <slot slot="head" name="head"></slot>
-<div id="top-row" class="z-50 pointer-events-none relative transition-all duration-700 max-w-[var(--page-width)] px-0 md:px-4 mx-auto" class:list={[""]}>
-    <div id="navbar-wrapper" class="pointer-events-auto sticky top-0 transition-all">
+<div id="top-row" class="z-50 pointer-events-none relative max-w-[var(--page-width)] px-0 md:px-4 mx-auto" class:list={[""]}>
+    <div id="navbar-wrapper" class="pointer-events-auto sticky top-0 transition-[opacity,transform] duration-300">
         <Navbar></Navbar>
     </div>
-    <NavbarScrollBehavior client:only="svelte"></NavbarScrollBehavior>
 </div>
 
 <!-- Banner -->
@@ -111,9 +108,7 @@ const mainPanelTop = siteConfig.banner.enable
             </a>}
 
 
-            <SideBar class="row-start-2 row-span-2 col-span-1 lg:row-start-1 lg:row-span-1 lg:col-span-1 onload-animation"></SideBar>
-
-            <main id="swup-container" class="col-span-1 lg:col-span-1 overflow-hidden">
+            <main id="swup-container" class="col-span-1 overflow-hidden">
                 <div id="content-wrapper" class="onload-animation">
                     <!-- the overflow-hidden here prevent long text break the layout-->
                     <!-- make id different from windows.swup global property -->
@@ -158,60 +153,13 @@ const mainPanelTop = siteConfig.banner.enable
 </Layout>
 
 <style is:global>
-:root {
-    --sidebar-width: 17.5rem;
-}
-
 #main-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1rem;
 }
 
-@media (min-width: 1024px) {
-    #main-grid {
-        grid-template-columns: 0 1fr;
-        gap: 0;
-    }
-    .is-home #main-grid {
-        grid-template-columns: var(--sidebar-width) 1fr;
-        gap: 1rem;
-    }
-}
-
-#sidebar {
-    grid-column: 1;
-}
-
 #swup-container {
     grid-column: 1;
-}
-
-@media (min-width: 1024px) {
-    #swup-container {
-        grid-column: 2;
-    }
-}
-
-@media (max-width: 1023px) {
-    :not(.is-home) #sidebar {
-        display: none;
-    }
-}
-
-@media (min-width: 1024px) {
-    #sidebar {
-        opacity: 0;
-        width: 0;
-        pointer-events: none;
-        overflow: hidden;
-        transform: translateX(-2rem);
-    }
-    .is-home #sidebar {
-        opacity: 1;
-        width: var(--sidebar-width);
-        pointer-events: auto;
-        transform: translateX(0);
-    }
 }
 </style>

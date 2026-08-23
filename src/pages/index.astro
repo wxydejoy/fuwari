@@ -1,0 +1,150 @@
+---
+import { siteConfig } from "../config";
+import { url } from "../utils/url-utils";
+
+const pageTitle = `${siteConfig.title} - ${siteConfig.subtitle}`;
+---
+
+<!doctype html>
+<html lang="zh-CN" class="landing-page">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={siteConfig.subtitle} />
+    <link rel="icon" href="/favicon/favicon.ico" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.7.0/style.css" />
+    <link rel="stylesheet" href="/landing/style.css" />
+  </head>
+  <body>
+    <main>
+    <div class="l_cover wiki wiki-hero">
+      <div class="wiki-cover-background galaxy" aria-hidden="true">
+        <canvas
+          data-galaxy-params='{"starSpeed":0.32,"speed":0.1,"rotationSpeed":0.018,"hueShift":198,"density":1.7,"glowIntensity":0.26,"twinkleIntensity":0.08}'
+        ></canvas>
+        <div class="wiki-cover-background-overlay"></div>
+      </div>
+
+      <div class="wiki-cover-layout">
+        <nav class="wiki-navbar" aria-label="站点导航">
+          <span class="wiki-navbar-home">{siteConfig.title}</span>
+        </nav>
+
+        <article class="wiki-cover-content">
+          <section class="wiki-cover-stage" aria-hidden="true">
+            <div class="shorekeeper-figure-wrap">
+              <img class="shorekeeper-figure" src="/landing/sprite.png" alt="守岸人" />
+            </div>
+          </section>
+
+          <section class="wiki-cover-copyblock">
+            <span class="wiki-cover-release">Spectro · 五星</span>
+            <h1 class="cover-title">守岸人</h1>
+            <p class="description">
+              黑海岸的守岸人。亘古守望之后，心中第一次生出情绪与渴望，决心与这个世界相连——也与你相连。
+            </p>
+            <div class="wiki-cover-actions">
+              <a class="button wiki-cover-source" href={url("/blog/")} data-no-swup>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    fill="currentColor"
+                    d="M6 2h9.172a2 2 0 0 1 1.414.586l3.828 3.828A2 2 0 0 1 21 7.828V20a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2m8 1.5V8h4.5zM8 13h8v1.5H8zm0 3.5h8V18H8z"
+                  ></path>
+                </svg>
+                <span>进入博客</span>
+              </a>
+              <a class="button" href="https://github.com/wxydejoy" target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    fill="currentColor"
+                    d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"
+                  ></path>
+                </svg>
+                <span>GitHub</span>
+              </a>
+            </div>
+
+            <img class="shorekeeper-card" src="/landing/card.jpg" alt="守岸人海报" />
+
+            <div class="wiki-cover-terminal" aria-label="守岸人台词">
+              <div class="wiki-cover-terminal-toolbar">
+                <div class="wiki-cover-terminal-tabs" role="tablist" aria-label="台词">
+                  <button
+                    type="button"
+                    role="tab"
+                    class="active"
+                    data-codes="这个名字，足够契合我的存在。&#10;我的意义，只因你而成立。"
+                  >
+                    守望
+                  </button>
+                  <button type="button" role="tab" data-codes="此岸是我存在的证明。&#10;星海尽头，我会等你。">
+                    此岸
+                  </button>
+                </div>
+                <button type="button" class="wiki-cover-copy" aria-label="复制">
+                  <span>抄录</span>
+                </button>
+              </div>
+              <pre><code id="install-code"><span>这个名字，足够契合我的存在。</span><span>我的意义，只因你而成立。</span></code></pre>
+            </div>
+          </section>
+        </article>
+      </div>
+
+      <img class="shorekeeper-sticker" src="/landing/butterfly.webp" alt="" />
+    </div>
+    </main>
+
+    <script is:inline src="/landing/galaxy.js"></script>
+    <script is:inline>
+      (function () {
+        const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const canvases = document.querySelectorAll(".wiki-cover-background.galaxy canvas");
+        if (!reduceMotion && window.stellar && window.stellar.galaxy) {
+          window.stellar.galaxy.mountAll(canvases);
+        }
+
+        const codeEl = document.getElementById("install-code");
+        const tabs = document.querySelectorAll(".wiki-cover-terminal-tabs button");
+        tabs.forEach(function (tab) {
+          tab.addEventListener("click", function () {
+            tabs.forEach(function (item) {
+              item.classList.remove("active");
+            });
+            tab.classList.add("active");
+            const lines = (tab.getAttribute("data-codes") || "").split("\n");
+            if (codeEl) {
+              codeEl.innerHTML = lines.map(function (line) {
+                return "<span>" + line + "</span>";
+              }).join("");
+            }
+          });
+        });
+
+        var copyBtn = document.querySelector(".wiki-cover-copy");
+        if (copyBtn) {
+          copyBtn.addEventListener("click", function () {
+            var text = Array.prototype.slice
+              .call(codeEl ? codeEl.querySelectorAll("span") : [])
+              .map(function (span) {
+                return span.textContent;
+              })
+              .join("\n");
+            navigator.clipboard.writeText(text).then(function () {
+              var label = document.querySelector(".wiki-cover-copy span");
+              if (!label) return;
+              var prev = label.textContent;
+              label.textContent = "已抄录";
+              setTimeout(function () {
+                label.textContent = prev;
+              }, 1200);
+            }).catch(function (error) {
+              console.error(error);
+            });
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>
