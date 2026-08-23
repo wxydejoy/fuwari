@@ -5,6 +5,7 @@
     let isScrollingDown = false;
     let scrollOpacity = 1;
     let navbarHeight = 0;
+    let ready = false;
     
     // 配置参数
     const OPACITY_CHANGE_THRESHOLD = 100; // 开始改变透明度的滚动距离
@@ -15,6 +16,8 @@
     let scrollTimeout;
     
     function handleScroll() {
+        if (!ready) return;
+
         // 防抖处理
         if (scrollTimeout) {
             clearTimeout(scrollTimeout);
@@ -61,18 +64,20 @@
     }
     
     onMount(() => {
-        // 初始化
         const navbarElement = document.getElementById('navbar-wrapper');
-        if (navbarElement) {
-            navbarHeight = navbarElement.offsetHeight;
-            navbarElement.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
-        }
-        
-        // 添加滚动事件监听
+        const start = window.setTimeout(() => {
+            ready = true;
+            if (navbarElement) {
+                navbarHeight = navbarElement.offsetHeight;
+                navbarElement.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+            }
+        }, 400);
+
         window.addEventListener('scroll', handleScroll);
-        
-        // 初始执行一次
-        handleScroll();
+
+        return () => {
+            window.clearTimeout(start);
+        };
     });
     
     onDestroy(() => {

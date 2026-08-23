@@ -80,10 +80,10 @@ const bannerOffset =
 	  style="background: var(--ocean-gradient-light);"
 >
 	<head>
-
 		<title>{pageTitle}</title>
 
 		<meta charset="UTF-8" />
+		<meta name="view-transition" content="same-origin" />
 		<meta name="description" content={description || pageTitle}>
 		<meta name="author" content={profileConfig.name}>
 
@@ -218,6 +218,26 @@ const bannerOffset =
 	}
 	.navbar-hidden {
 		@apply opacity-0 -translate-y-16
+	}
+}
+
+@keyframes landing-vt-out {
+	to { opacity: 0; }
+}
+@keyframes landing-vt-in {
+	from { opacity: 0; }
+}
+::view-transition-old(root) {
+	animation: 360ms ease both landing-vt-out;
+}
+::view-transition-new(root) {
+	animation: 480ms ease both landing-vt-in;
+}
+@media (prefers-reduced-motion: reduce) {
+	::view-transition-group(*),
+	::view-transition-old(*),
+	::view-transition-new(*) {
+		animation: none !important;
 	}
 }
 </style>

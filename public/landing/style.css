@@ -1,4 +1,5 @@
 html.landing-page {
+  background: #05060d;
   --fs-root: 16px;
   --fs-content-base: 16px;
   --background: #000;
@@ -586,5 +587,33 @@ html.landing-page a {
   .shorekeeper-figure-wrap,
   .shorekeeper-sticker {
     animation: none;
+  }
+}
+
+@keyframes landing-vt-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes landing-vt-in {
+  from {
+    opacity: 0;
+  }
+}
+
+::view-transition-old(root) {
+  animation: 360ms ease both landing-vt-out;
+}
+
+::view-transition-new(root) {
+  animation: 480ms ease both landing-vt-in;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }
