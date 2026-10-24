@@ -12,7 +12,7 @@ if (!friendsPost) {
 }
 
 // Parse friends data from markdown content
-const friendsContent = friendsPost.body;
+const friendsContent = friendsPost.body ?? "";
 const friends = parseFriends(friendsContent);
 ---
 <MainGridLayout title="友链" description="我的朋友们，优秀的博客推荐及友情链接申请。">
@@ -142,13 +142,17 @@ const friends = parseFriends(friendsContent);
         const noResults = document.getElementById('no-results');
         const friendCards = document.querySelectorAll('.friend-card');
         
-        if (!searchInput || !friendsGrid || !noResults) return;
+        if (!(searchInput instanceof HTMLInputElement) || !friendsGrid || !noResults) return;
+        const input = searchInput;
+        const grid = friendsGrid;
+        const empty = noResults;
         
         function filterFriends() {
-            const searchTerm = searchInput.value.toLowerCase().trim();
+            const searchTerm = input.value.toLowerCase().trim();
             let visibleCount = 0;
             
             friendCards.forEach(card => {
+                if (!(card instanceof HTMLElement)) return;
                 const name = card.getAttribute('data-name') || '';
                 const description = card.getAttribute('data-description') || '';
                 
@@ -162,21 +166,21 @@ const friends = parseFriends(friendsContent);
             
             // 显示/隐藏空状态提示
             if (visibleCount === 0 && searchTerm !== '') {
-                noResults.classList.remove('hidden');
-                friendsGrid.classList.add('hidden');
+                empty.classList.remove('hidden');
+                grid.classList.add('hidden');
             } else {
-                noResults.classList.add('hidden');
-                friendsGrid.classList.remove('hidden');
+                empty.classList.add('hidden');
+                grid.classList.remove('hidden');
             }
         }
         
         // 监听输入事件
-        searchInput.addEventListener('input', filterFriends);
-        searchInput.addEventListener('keydown', (e) => {
+        input.addEventListener('input', filterFriends);
+        input.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                searchInput.value = '';
+                input.value = '';
                 filterFriends();
-                searchInput.blur();
+                input.blur();
             }
         });
     })();
@@ -185,9 +189,10 @@ const friends = parseFriends(friendsContent);
     document.addEventListener('DOMContentLoaded', function() {
         const avatars = document.querySelectorAll('.friend-avatar');
         avatars.forEach(avatar => {
-            avatar.addEventListener('error', function() {
-                if (!this.src.includes('data:image/svg+xml')) {
-                    this.src = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%23e5e7eb\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%239ca3af\' font-size=\'14\'%3E头像%3C/text%3E%3C/svg%3E';
+            if (!(avatar instanceof HTMLImageElement)) return;
+            avatar.addEventListener('error', () => {
+                if (!avatar.src.includes('data:image/svg+xml')) {
+                    avatar.src = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%23e5e7eb\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%239ca3af\' font-size=\'14\'%3E头像%3C/text%3E%3C/svg%3E';
                 }
             });
         });

@@ -1,6 +1,6 @@
+import { unified } from "@astrojs/markdown-remark";
 import sitemap from "@astrojs/sitemap";
 import svelte from "@astrojs/svelte";
-import tailwind from "@astrojs/tailwind";
 import { pluginCollapsibleSections } from "@expressive-code/plugin-collapsible-sections";
 import { pluginLineNumbers } from "@expressive-code/plugin-line-numbers";
 import swup from "@swup/astro";
@@ -31,10 +31,9 @@ export default defineConfig({
 	base: "/",
 	trailingSlash: "always",
 	prefetch: true,
+	// Keep Astro 5 HTML whitespace so inline text does not collapse.
+	compressHTML: true,
 	integrations: [
-		tailwind({
-			nesting: true,
-		}),
 		swup({
 			theme: false,
 			animationClass: "transition-swup-", // see https://swup.js.org/options/#animationselector
@@ -106,6 +105,7 @@ export default defineConfig({
 		sitemap(),
 	],
 	markdown: {
+		processor: unified({
 		remarkPlugins: [
 			remarkMath,
 			remarkReadingTime,
@@ -162,9 +162,11 @@ export default defineConfig({
 				},
 			],
 		],
+		}),
 	},
 	vite: {
 		build: {
+			cssMinify: "esbuild",
 			rollupOptions: {
 				onwarn(warning, warn) {
 					// temporarily suppress this warning

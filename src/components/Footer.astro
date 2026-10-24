@@ -2,7 +2,7 @@
 
 import { profileConfig } from "../config";
 import { url } from "../utils/url-utils";
-import packageJson from "../../package.json" assert { type: "json" };
+import packageJson from "../../package.json" with { type: "json" };
 
 const currentYear = new Date().getFullYear();
 const version = packageJson.version;
