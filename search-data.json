@@ -1,0 +1,231 @@
+[
+  {
+    "id": "post/code/others/宿舍的千兆被限到五十兆",
+    "slug": "post/code/others/宿舍的千兆被限到五十兆",
+    "title": "宿舍的千兆，被限到了五十兆",
+    "description": "",
+    "tags": [
+      "OpenWrt",
+      "🔧折腾",
+      "🌐网络"
+    ],
+    "category": "💻Code",
+    "published": "2026-10-24T00:00:00.000Z",
+    "url": "/posts/post/code/others/宿舍的千兆被限到五十兆/"
+  },
+  {
+    "id": "post/software/mac-和-windows-融为一体",
+    "slug": "post/software/mac-和-windows-融为一体",
+    "title": "Mac 和 Windows 融为一体",
+    "description": "",
+    "tags": [
+      "💻Software"
+    ],
+    "category": "💻Software",
+    "published": "2026-10-24T00:00:00.000Z",
+    "url": "/posts/post/software/mac-和-windows-融为一体/"
+  },
+  {
+    "id": "post/life/与ai共事的一天",
+    "slug": "post/life/与ai共事的一天",
+    "title": "一个AI助手的诞生——从零开始的完整经历",
+    "description": "一个AI助手从诞生到接管日常任务的全过程记录，涵盖定时任务、媒体服务器、投资监控、博客优化、GitHub集成等实战场景。",
+    "tags": [
+      "🤖AI",
+      "🔧折腾",
+      "💻Code"
+    ],
+    "category": "Tech",
+    "published": "2026-04-13T00:00:00.000Z",
+    "url": "/posts/post/life/与ai共事的一天/"
+  },
+  {
+    "id": "post/code/py/ai会取代人吗",
+    "slug": "post/code/py/ai会取代人吗",
+    "title": "AI会取代人吗？",
+    "description": "",
+    "tags": [
+      "🤖AI",
+      "💻Code"
+    ],
+    "category": "",
+    "published": "2026-01-26T00:00:00.000Z",
+    "url": "/posts/post/code/py/ai会取代人吗/"
+  },
+  {
+    "id": "post/life/潮汐色盘---富士-lut-使用分享",
+    "slug": "post/life/潮汐色盘---富士-lut-使用分享",
+    "title": "🐚 获取潮汐色盘——富士 LUT 使用分享",
+    "description": "",
+    "tags": [
+      "📷摄影"
+    ],
+    "category": "🔖Life",
+    "published": "2026-01-18T00:00:00.000Z",
+    "url": "/posts/post/life/潮汐色盘---富士-lut-使用分享/"
+  },
+  {
+    "id": "post/life/毕业工作赚钱然后爱自己",
+    "slug": "post/life/毕业工作赚钱然后爱自己",
+    "title": "毕业，工作，赚钱，然后爱自己",
+    "description": "",
+    "tags": [
+      "Life"
+    ],
+    "category": "🔖Life",
+    "published": "2026-01-17T00:00:00.000Z",
+    "url": "/posts/post/life/毕业工作赚钱然后爱自己/"
+  },
+  {
+    "id": "post/code/embedded/arm-烧录器分享stm32",
+    "slug": "post/code/embedded/arm-烧录器分享stm32",
+    "title": "CMSIS-DAP 烧录器分享（STM32）",
+    "description": "",
+    "tags": [
+      "💻Code"
+    ],
+    "category": "💻Code",
+    "published": "2024-07-20T00:00:00.000Z",
+    "url": "/posts/post/code/embedded/arm-烧录器分享stm32/"
+  },
+  {
+    "id": "post/code/py/python-爬虫之-drissionpage",
+    "slug": "post/code/py/python-爬虫之-drissionpage",
+    "title": "Python 爬虫之 DrissionPage",
+    "description": "",
+    "tags": [
+      "💻Code",
+      "🕷️Python"
+    ],
+    "category": "💻Code",
+    "published": "2024-03-15T00:00:00.000Z",
+    "url": "/posts/post/code/py/python-爬虫之-drissionpage/"
+  },
+  {
+    "id": "post/hexo/我的博客",
+    "slug": "post/hexo/我的博客",
+    "title": "我的博客",
+    "description": "",
+    "tags": [
+      "📃Blog"
+    ],
+    "category": "💻Code",
+    "published": "2024-03-15T00:00:00.000Z",
+    "url": "/posts/post/hexo/我的博客/"
+  },
+  {
+    "id": "post/code/ros2/ros2_urdf",
+    "slug": "post/code/ros2/ros2_urdf",
+    "title": "URDF 导出资料（ROS2）",
+    "description": "",
+    "tags": [
+      "ROS2"
+    ],
+    "category": "💻Code",
+    "published": "2023-08-21T00:00:00.000Z",
+    "url": "/posts/post/code/ros2/ros2_urdf/"
+  },
+  {
+    "id": "post/code/ros2/x3/旭日x3pi的开发日常",
+    "slug": "post/code/ros2/x3/旭日x3pi的开发日常",
+    "title": "旭日x3PI的开发日常",
+    "description": "",
+    "tags": [
+      "X3PI",
+      "开发日常"
+    ],
+    "category": "💻Code",
+    "published": "2023-07-05T00:00:00.000Z",
+    "url": "/posts/post/code/ros2/x3/旭日x3pi的开发日常/"
+  },
+  {
+    "id": "post/code/embedded/qtcreator",
+    "slug": "post/code/embedded/qtcreator",
+    "title": "QtCreator 一键打包你的APP",
+    "description": "",
+    "tags": [
+      "💻Code",
+      "📦QT"
+    ],
+    "category": "",
+    "published": "2023-07-03T00:00:00.000Z",
+    "url": "/posts/post/code/embedded/qtcreator/"
+  },
+  {
+    "id": "post/code/ros2/x3/旭日-x3pi-人体关键点识别",
+    "slug": "post/code/ros2/x3/旭日-x3pi-人体关键点识别",
+    "title": "旭日 x3PI RealSense人体关键点识别",
+    "description": "",
+    "tags": [
+      "X3PI",
+      "ROS2",
+      "RealSense"
+    ],
+    "category": "💻Code",
+    "published": "2023-05-26T00:00:00.000Z",
+    "url": "/posts/post/code/ros2/x3/旭日-x3pi-人体关键点识别/"
+  },
+  {
+    "id": "post/code/cpp/moneyprogress_win",
+    "slug": "post/code/cpp/moneyprogress_win",
+    "title": "MoneyProgress_win",
+    "description": "",
+    "tags": [
+      "💻Code",
+      "📃Study",
+      "📦QT"
+    ],
+    "category": "💻Code",
+    "published": "2023-04-11T00:00:00.000Z",
+    "url": "/posts/post/code/cpp/moneyprogress_win/"
+  },
+  {
+    "id": "post/life/戴森球计划",
+    "slug": "post/life/戴森球计划",
+    "title": "戴森球计划[游戏安利]",
+    "description": "",
+    "tags": [
+      "🎮Game"
+    ],
+    "category": "🎮Game",
+    "published": "2023-01-11T00:00:00.000Z",
+    "url": "/posts/post/life/戴森球计划/"
+  },
+  {
+    "id": "post/code/py/invoice_ocr",
+    "slug": "post/code/py/invoice_ocr",
+    "title": "invoice_ocr",
+    "description": "",
+    "tags": [
+      "💻Code",
+      "Python"
+    ],
+    "category": "💻Code",
+    "published": "2022-10-01T00:00:00.000Z",
+    "url": "/posts/post/code/py/invoice_ocr/"
+  },
+  {
+    "id": "post/code/robot/三自由度",
+    "slug": "post/code/robot/三自由度",
+    "title": "三根杆",
+    "description": "",
+    "tags": [
+      "⚙️Machine"
+    ],
+    "category": "💻Code",
+    "published": "2022-01-03T00:00:00.000Z",
+    "url": "/posts/post/code/robot/三自由度/"
+  },
+  {
+    "id": "post/life/气阀板使用说明",
+    "slug": "post/life/气阀板使用说明",
+    "title": "气阀板使用说明",
+    "description": "",
+    "tags": [
+      "🔖Life"
+    ],
+    "category": "🔖Life",
+    "published": "2021-05-14T00:00:00.000Z",
+    "url": "/posts/post/life/气阀板使用说明/"
+  }
+]
