@@ -166,6 +166,9 @@ export default defineConfig({
 	},
 	vite: {
 		build: {
+			// Vite 8 minifies CSS with lightningcss by default, which rejects
+			// nested `&` left in these styles. esbuild is an optional peer and
+			// must be installed directly so a clean pnpm install can resolve it.
 			cssMinify: "esbuild",
 			rollupOptions: {
 				onwarn(warning, warn) {

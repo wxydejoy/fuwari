@@ -1,7 +1,7 @@
 {
   "name": "fuwari",
   "type": "module",
-  "version": "0.0.30",
+  "version": "0.0.31",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
@@ -81,6 +81,7 @@
     "@types/markdown-it": "^14.1.2",
     "@types/mdast": "^4.0.4",
     "@types/sanitize-html": "^2.16.0",
+    "esbuild": "0.28.2",
     "fontmin": "^1.1.1",
     "postcss-import": "^16.1.1",
     "postcss-nesting": "^13.0.2",
