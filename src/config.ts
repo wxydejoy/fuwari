@@ -101,6 +101,11 @@ export const expressiveCodeConfig: ExpressiveCodeConfig = {
 
 // Only these posts are shown on the site. Set to null to show all non-draft posts.
 export const visiblePostTitles: Set<string> | null = new Set([
+	"宿舍的千兆，被限到了五十兆",
+	"Mac 和 Windows 融为一体",
+	"一个AI助手的诞生——从零开始的完整经历",
+	"AI会取代人吗？",
+	"🐚 获取潮汐色盘——富士 LUT 使用分享",
 	"毕业，工作，赚钱，然后爱自己",
 	"CMSIS-DAP 烧录器分享（STM32）",
 	"我的博客",
