@@ -1,7 +1,7 @@
 {
   "name": "fuwari",
   "type": "module",
-  "version": "0.0.27",
+  "version": "0.0.28",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
@@ -11,6 +11,7 @@
     "astro": "astro",
     "type-check": "tsc --noEmit --isolatedDeclarations",
     "new-post": "node scripts/new-post.js",
+    "subset-landing-font": "node scripts/subset-landing-font.mjs",
     "download-posts": "node scripts/download-posts.js",
     "format": "biome format --write ./src",
     "lint": "biome check --write ./src",
@@ -80,6 +81,7 @@
     "@types/markdown-it": "^14.1.2",
     "@types/mdast": "^4.0.4",
     "@types/sanitize-html": "^2.16.0",
+    "fontmin": "^1.1.1",
     "postcss-import": "^16.1.1",
     "postcss-nesting": "^13.0.2",
     "simple-git-hooks": "^2.13.1",

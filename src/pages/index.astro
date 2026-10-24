@@ -15,7 +15,13 @@ const pageTitle = `${siteConfig.title} - ${siteConfig.subtitle}`;
     <title>{pageTitle}</title>
     <meta name="description" content={siteConfig.subtitle} />
     <link rel="icon" href="/favicon/favicon.ico" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.7.0/style.css" />
+    <link
+      rel="preload"
+      href="/landing/fonts/lxgw-wenkai-screen.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <link rel="stylesheet" href="/landing/style.css" />
   </head>
   <body>

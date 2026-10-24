@@ -1,6 +1,9 @@
 # build output
 dist/
 
+# one-shot font subset source (output is committed under public/landing/fonts)
+/tmp/
+
 # generated types
 .astro/
 

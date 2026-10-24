@@ -1,3 +1,12 @@
+/* 霞鹜文楷屏幕阅读版，仅含首页用字。SIL OFL 1.1，见 ./fonts/OFL.txt */
+@font-face {
+  font-family: "LXGW WenKai Screen";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/lxgw-wenkai-screen.woff2") format("woff2");
+}
+
 html.landing-page {
   background: #05060d;
   --fs-root: 16px;
