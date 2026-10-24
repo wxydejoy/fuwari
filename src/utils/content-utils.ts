@@ -2,13 +2,10 @@ import path from "node:path";
 import { type CollectionEntry, getCollection } from "astro:content";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import { visiblePostTitles } from "src/config";
 import { getCategoryUrl, getDir } from "@utils/url-utils.ts";
 
 function isPostVisible(data: CollectionEntry<"posts">["data"]): boolean {
-	if (data.draft === true) return false;
-	if (visiblePostTitles) return visiblePostTitles.has(data.title);
-	return true;
+	return data.draft !== true;
 }
 
 // // Retrieve posts and sort them by publication date

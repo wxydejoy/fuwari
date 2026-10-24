@@ -98,27 +98,3 @@ export const expressiveCodeConfig: ExpressiveCodeConfig = {
 	// Please select a dark theme, as this blog theme currently only supports dark background color
 	theme: "github-dark",
 };
-
-// Only these posts are shown on the site. Set to null to show all non-draft posts.
-export const visiblePostTitles: Set<string> | null = new Set([
-	"宿舍的千兆，被限到了五十兆",
-	"Mac 和 Windows 融为一体",
-	"一个AI助手的诞生——从零开始的完整经历",
-	"AI会取代人吗？",
-	"🐚 获取潮汐色盘——富士 LUT 使用分享",
-	"毕业，工作，赚钱，然后爱自己",
-	"CMSIS-DAP 烧录器分享（STM32）",
-	"我的博客",
-	"Python 爬虫之 DrissionPage",
-	"URDF 导出资料（ROS2）",
-	"旭日x3PI的开发日常",
-	"QtCreator 一键打包你的APP",
-	"旭日 x3PI RealSense人体关键点识别",
-	"MoneyProgress_win",
-	"戴森球计划[游戏安利]",
-	"invoice_ocr",
-	"三根杆",
-	"HEXO_and_Fontmin",
-	'建站的"心路历程"',
-	"气阀板使用说明",
-]);
