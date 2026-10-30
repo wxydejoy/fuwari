@@ -1,0 +1,2164 @@
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>沐沐小站</title><description>漂泊者的休憩之地，守岸人的灯塔。用文字抵抗遗忘，用开源连接彼此。</description><link>https://undf.cn/</link><language>zh_CN</language><item><title>宿舍的千兆，被限到了五十兆</title><link>https://undf.cn/posts/post/code/others/%E5%AE%BF%E8%88%8D%E7%9A%84%E5%8D%83%E5%85%86%E8%A2%AB%E9%99%90%E5%88%B0%E4%BA%94%E5%8D%81%E5%85%86/</link><guid isPermaLink="true">https://undf.cn/posts/post/code/others/%E5%AE%BF%E8%88%8D%E7%9A%84%E5%8D%83%E5%85%86%E8%A2%AB%E9%99%90%E5%88%B0%E4%BA%94%E5%8D%81%E5%85%86/</guid><pubDate>Sat, 24 Oct 2026 00:00:00 GMT</pubDate><content:encoded>&lt;h1&gt;宿舍的千兆，被限到了五十兆&lt;/h1&gt;
+&lt;p&gt;你住的宿舍，宽带名义上是千兆。&lt;/p&gt;
+&lt;p&gt;运营按终端限速，每一台设备只给大约五十兆。人一多，网页、网课和下载都挤在这一档里，日常已经接近不能用。线路本身还有余量，被收住的是每一个连上去的身份。&lt;/p&gt;
+&lt;p&gt;所以才用了这台 OpenWrt。没有另找一条宽带，只是让同一条宿舍无线，把屋里算成八台设备。无线名称、密码和网卡地址不写在下面，参数按实际在用的配置来。&lt;/p&gt;
+&lt;h2&gt;八个身份&lt;/h2&gt;
+&lt;p&gt;上级还是宿舍原来的那个无线。2.4G 连四次，5G 连四次。八个接口各自做客户端，各自向宿舍网关要一个地址。网关仍是同一个，额度就按八份来给。&lt;/p&gt;
+&lt;p&gt;局域网给屋里的手机和电脑。2.4G 上还留了一个热点，5G 那张卡主要拿去连上级。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;/etc/config/network&lt;/code&gt; 里，出口只有 DHCP 和优先级。数字越小越优先，留给没有被 mwan3 接管的流量：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;config interface &apos;lan&apos;
+	option device &apos;br-lan&apos;
+	option proto &apos;static&apos;
+	option ip6assign &apos;60&apos;
+	option multipath &apos;off&apos;
+	list ipaddr &apos;10.14.14.1/24&apos;
+
+config interface &apos;wwan&apos;
+	option proto &apos;dhcp&apos;
+	option metric &apos;10&apos;
+
+config interface &apos;wwan2&apos;
+	option proto &apos;dhcp&apos;
+	option metric &apos;20&apos;
+
+config interface &apos;wwan3&apos;
+	option proto &apos;dhcp&apos;
+	option metric &apos;30&apos;
+
+config interface &apos;wwan4&apos;
+	option proto &apos;dhcp&apos;
+	option metric &apos;40&apos;
+
+config interface &apos;wwan5&apos;
+	option proto &apos;dhcp&apos;
+	option metric &apos;50&apos;
+
+config interface &apos;wwan6&apos;
+	option proto &apos;dhcp&apos;
+	option metric &apos;60&apos;
+
+config interface &apos;wwan7&apos;
+	option proto &apos;dhcp&apos;
+	option metric &apos;70&apos;
+
+config interface &apos;wwan8&apos;
+	option proto &apos;dhcp&apos;
+	option metric &apos;80&apos;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;code&gt;br-lan&lt;/code&gt; 桥的是板上的 &lt;code&gt;eth0&lt;/code&gt; 和 &lt;code&gt;eth1&lt;/code&gt;。八个 &lt;code&gt;wwan&lt;/code&gt; 都不写设备名，设备绑在无线那一侧。&lt;/p&gt;
+&lt;h2&gt;无线怎么绑&lt;/h2&gt;
+&lt;p&gt;两张射频都固定在国区。2.4G 用 7 信道、HT40，上面同时扛热点和四条上行。5G 用 161 信道，四条全是上行。&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;config wifi-device &apos;radio0&apos;
+	option type &apos;mac80211&apos;
+	option band &apos;2g&apos;
+	option channel &apos;7&apos;
+	option htmode &apos;HT40&apos;
+	option country &apos;CN&apos;
+	option cell_density &apos;0&apos;
+
+config wifi-device &apos;radio1&apos;
+	option type &apos;mac80211&apos;
+	option band &apos;5g&apos;
+	option channel &apos;161&apos;
+	option country &apos;CN&apos;
+	option cell_density &apos;0&apos;
+
+config wifi-iface &apos;default_radio0&apos;
+	option device &apos;radio0&apos;
+	option network &apos;lan&apos;
+	option mode &apos;ap&apos;
+	option encryption &apos;psk2&apos;
+	option ssid &apos;屋里的热点&apos;
+	option key &apos;（不写）&apos;
+
+config wifi-iface &apos;wifinet2&apos;
+	option device &apos;radio1&apos;
+	option mode &apos;sta&apos;
+	option network &apos;wwan&apos;
+	option encryption &apos;psk2&apos;
+	option ssid &apos;宿舍无线-5G&apos;
+	option key &apos;（不写）&apos;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;其余七条 STA 是同一份参数换接口名。2.4G 的上级名称和 5G 的不是同一个，加密都是 &lt;code&gt;psk2&lt;/code&gt;，密码用的同一把。其中 &lt;code&gt;wwan3&lt;/code&gt; 额外锁了一个 BSSID，避免它自己换到别的基站，这一份额度就算乱了。&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;无线接口&lt;/th&gt;
+&lt;th&gt;射频&lt;/th&gt;
+&lt;th&gt;模式&lt;/th&gt;
+&lt;th&gt;绑定网络&lt;/th&gt;
+&lt;th&gt;metric&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;一条 5G STA&lt;/td&gt;
+&lt;td&gt;radio1&lt;/td&gt;
+&lt;td&gt;sta&lt;/td&gt;
+&lt;td&gt;wwan&lt;/td&gt;
+&lt;td&gt;10&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;一条 2.4G STA&lt;/td&gt;
+&lt;td&gt;radio0&lt;/td&gt;
+&lt;td&gt;sta&lt;/td&gt;
+&lt;td&gt;wwan2&lt;/td&gt;
+&lt;td&gt;20&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;一条 5G STA，锁了 BSSID&lt;/td&gt;
+&lt;td&gt;radio1&lt;/td&gt;
+&lt;td&gt;sta&lt;/td&gt;
+&lt;td&gt;wwan3&lt;/td&gt;
+&lt;td&gt;30&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;一条 2.4G STA&lt;/td&gt;
+&lt;td&gt;radio0&lt;/td&gt;
+&lt;td&gt;sta&lt;/td&gt;
+&lt;td&gt;wwan4&lt;/td&gt;
+&lt;td&gt;40&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;一条 2.4G STA&lt;/td&gt;
+&lt;td&gt;radio0&lt;/td&gt;
+&lt;td&gt;sta&lt;/td&gt;
+&lt;td&gt;wwan5&lt;/td&gt;
+&lt;td&gt;50&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;一条 2.4G STA&lt;/td&gt;
+&lt;td&gt;radio0&lt;/td&gt;
+&lt;td&gt;sta&lt;/td&gt;
+&lt;td&gt;wwan6&lt;/td&gt;
+&lt;td&gt;60&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;一条 5G STA&lt;/td&gt;
+&lt;td&gt;radio1&lt;/td&gt;
+&lt;td&gt;sta&lt;/td&gt;
+&lt;td&gt;wwan7&lt;/td&gt;
+&lt;td&gt;70&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;一条 5G STA&lt;/td&gt;
+&lt;td&gt;radio1&lt;/td&gt;
+&lt;td&gt;sta&lt;/td&gt;
+&lt;td&gt;wwan8&lt;/td&gt;
+&lt;td&gt;80&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;防火墙把这八个接口放进同一个 &lt;code&gt;wan&lt;/code&gt; 区域，做出网伪装。没有这一段，里面的地址出不去。&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;config zone
+	option name &apos;wan&apos;
+	option input &apos;REJECT&apos;
+	option output &apos;ACCEPT&apos;
+	option forward &apos;DROP&apos;
+	option masq &apos;1&apos;
+	option mtu_fix &apos;1&apos;
+	list network &apos;wwan&apos;
+	list network &apos;wwan2&apos;
+	list network &apos;wwan3&apos;
+	list network &apos;wwan4&apos;
+	list network &apos;wwan5&apos;
+	list network &apos;wwan6&apos;
+	list network &apos;wwan7&apos;
+	list network &apos;wwan8&apos;
+
+config forwarding
+	option src &apos;lan&apos;
+	option dest &apos;wan&apos;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;code&gt;flow_offloading&lt;/code&gt; 是关的。&lt;/p&gt;
+&lt;h2&gt;mwan3 的参数&lt;/h2&gt;
+&lt;p&gt;只连八次还不够。系统会挑 metric 最小的那条走，流量又堆回 &lt;code&gt;wwan&lt;/code&gt;，另外七份五十兆空着。&lt;/p&gt;
+&lt;p&gt;mwan3 里八个成员的 metric、weight 都是 1，策略叫 &lt;code&gt;balanced&lt;/code&gt;。新连接被分到不同的 STA 上，每条连接花的是那一个身份自己的额度。&lt;/p&gt;
+&lt;p&gt;八个接口的探测参数相同。下面只放 &lt;code&gt;wwan&lt;/code&gt; 这一份，&lt;code&gt;wwan2&lt;/code&gt; 到 &lt;code&gt;wwan8&lt;/code&gt; 照这组数字复制，只改接口名：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;config globals &apos;globals&apos;
+	option mmx_mask &apos;0x3F00&apos;
+	option logging &apos;0&apos;
+	option loglevel &apos;notice&apos;
+
+config interface &apos;wwan&apos;
+	option enabled &apos;1&apos;
+	option initial_state &apos;online&apos;
+	option family &apos;ipv4&apos;
+	option track_method &apos;ping&apos;
+	option reliability &apos;1&apos;
+	option count &apos;1&apos;
+	option size &apos;56&apos;
+	option max_ttl &apos;60&apos;
+	option timeout &apos;2&apos;
+	option interval &apos;5&apos;
+	option failure_interval &apos;5&apos;
+	option recovery_interval &apos;5&apos;
+	option down &apos;3&apos;
+	option up &apos;3&apos;
+	list track_ip &apos;223.5.5.5&apos;
+	list track_ip &apos;119.29.29.29&apos;
+
+config member &apos;wwan_m&apos;
+	option interface &apos;wwan&apos;
+	option metric &apos;1&apos;
+	option weight &apos;1&apos;
+
+config member &apos;wwan2_m&apos;
+	option interface &apos;wwan2&apos;
+	option metric &apos;1&apos;
+	option weight &apos;1&apos;
+
+config member &apos;wwan3_m&apos;
+	option interface &apos;wwan3&apos;
+	option metric &apos;1&apos;
+	option weight &apos;1&apos;
+
+config member &apos;wwan4_m&apos;
+	option interface &apos;wwan4&apos;
+	option metric &apos;1&apos;
+	option weight &apos;1&apos;
+
+config member &apos;wwan5_m&apos;
+	option interface &apos;wwan5&apos;
+	option metric &apos;1&apos;
+	option weight &apos;1&apos;
+
+config member &apos;wwan6_m&apos;
+	option interface &apos;wwan6&apos;
+	option metric &apos;1&apos;
+	option weight &apos;1&apos;
+
+config member &apos;wwan7_m&apos;
+	option interface &apos;wwan7&apos;
+	option metric &apos;1&apos;
+	option weight &apos;1&apos;
+
+config member &apos;wwan8_m&apos;
+	option interface &apos;wwan8&apos;
+	option metric &apos;1&apos;
+	option weight &apos;1&apos;
+
+config policy &apos;balanced&apos;
+	option last_resort &apos;default&apos;
+	list use_member &apos;wwan_m&apos;
+	list use_member &apos;wwan2_m&apos;
+	list use_member &apos;wwan3_m&apos;
+	list use_member &apos;wwan4_m&apos;
+	list use_member &apos;wwan5_m&apos;
+	list use_member &apos;wwan6_m&apos;
+	list use_member &apos;wwan7_m&apos;
+	list use_member &apos;wwan8_m&apos;
+
+config rule &apos;default_rule&apos;
+	option dest_ip &apos;0.0.0.0/0&apos;
+	option use_policy &apos;balanced&apos;
+	option family &apos;ipv4&apos;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;这组探测的意思很具体。每 5 秒 ping 一次，超时 2 秒，目标是 &lt;code&gt;223.5.5.5&lt;/code&gt; 和 &lt;code&gt;119.29.29.29&lt;/code&gt;。&lt;code&gt;reliability&lt;/code&gt; 为 1，通一个就算这次成功。连续失败 3 次（&lt;code&gt;down&lt;/code&gt;）把这条摘掉，连续成功 3 次（&lt;code&gt;up&lt;/code&gt;）再加回来。成员权重都是 1，所以在线的几条是等权分，不是按 &lt;code&gt;network&lt;/code&gt; 里的 10 到 80 去倾斜。&lt;code&gt;last_resort &apos;default&apos;&lt;/code&gt; 是八条都不在线时，退回系统自己的默认路由。&lt;/p&gt;
+&lt;h2&gt;用了几天之后&lt;/h2&gt;
+&lt;p&gt;系统是 OpenWrt 25.12，两核。连续运行了大约六天，负载 0.03。&lt;/p&gt;
+&lt;p&gt;八条链路都有流量。metric 10 那条收到大约 22 GiB，其余几条在 10 GiB 到 15 GiB 之间，没有谁把另外七条完全饿死。局域网口发出去将近 100 GiB，和八条收进来的量大体对得上。&lt;/p&gt;
+&lt;h2&gt;今天下午的测速&lt;/h2&gt;
+&lt;p&gt;平时多连接下载的高点大约 30 MB/s，换算成线路速率是 240 兆。单身份五十兆大约 6.3 MB/s，八份额度叠满是 50 MB/s。30 MB/s 落在这两档中间。&lt;/p&gt;
+&lt;p&gt;2026-10-24 14:30 前后，从这台路由的局域网有线口测的。电脑网卡是 2.5G，网关 &lt;code&gt;10.14.14.1&lt;/code&gt;，地址由这台路由分配。这段网线很短，延迟不到 1 毫秒。下面三件工具都没有打到 30 MB/s，记下的是当次样本。出口地址不写。&lt;/p&gt;
+&lt;p&gt;工具就这三件：&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;工具&lt;/th&gt;
+&lt;th&gt;版本&lt;/th&gt;
+&lt;th&gt;用来看什么&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Windows &lt;code&gt;ping&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;系统自带&lt;/td&gt;
+&lt;td&gt;空闲延迟、丢包&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Ookla Speedtest CLI&lt;/td&gt;
+&lt;td&gt;1.2.0.84（&lt;code&gt;ea6b6773cf&lt;/code&gt;）&lt;/td&gt;
+&lt;td&gt;多连接的下载、上传、跑满时的延迟&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Windows &lt;code&gt;curl.exe&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;8.21.0，Schannel&lt;/td&gt;
+&lt;td&gt;单条连接和八条连接各走多快&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Ookla 的 &lt;code&gt;bandwidth&lt;/code&gt; 单位是字节每秒。下面的「兆」是 &lt;code&gt;bandwidth × 8 / 1000000&lt;/code&gt;，「MB/s」是 &lt;code&gt;bandwidth / 1000000&lt;/code&gt;。&lt;/p&gt;
+&lt;h3&gt;ping&lt;/h3&gt;
+&lt;p&gt;探测地址各打了五次，后来又对网关、&lt;code&gt;223.5.5.5&lt;/code&gt; 和 &lt;code&gt;1.1.1.1&lt;/code&gt; 各打了十次。两次都没有丢包。&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;ping -n 5 10.14.14.1
+ping -n 5 223.5.5.5
+ping -n 5 119.29.29.29
+ping -n 10 10.14.14.1
+ping -n 10 223.5.5.5
+ping -n 10 1.1.1.1
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;目标&lt;/th&gt;
+&lt;th&gt;次数&lt;/th&gt;
+&lt;th&gt;最小&lt;/th&gt;
+&lt;th&gt;最大&lt;/th&gt;
+&lt;th&gt;平均&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;10.14.14.1&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;&amp;lt;1 毫秒&lt;/td&gt;
+&lt;td&gt;&amp;lt;1 毫秒&lt;/td&gt;
+&lt;td&gt;&amp;lt;1 毫秒&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;10.14.14.1&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;10&lt;/td&gt;
+&lt;td&gt;&amp;lt;1 毫秒&lt;/td&gt;
+&lt;td&gt;2 毫秒&lt;/td&gt;
+&lt;td&gt;&amp;lt;1 毫秒&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;223.5.5.5&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;6 毫秒&lt;/td&gt;
+&lt;td&gt;10 毫秒&lt;/td&gt;
+&lt;td&gt;8 毫秒&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;223.5.5.5&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;10&lt;/td&gt;
+&lt;td&gt;6 毫秒&lt;/td&gt;
+&lt;td&gt;7 毫秒&lt;/td&gt;
+&lt;td&gt;6 毫秒&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;119.29.29.29&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;12 毫秒&lt;/td&gt;
+&lt;td&gt;15 毫秒&lt;/td&gt;
+&lt;td&gt;13 毫秒&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;1.1.1.1&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;10&lt;/td&gt;
+&lt;td&gt;65 毫秒&lt;/td&gt;
+&lt;td&gt;72 毫秒&lt;/td&gt;
+&lt;td&gt;66 毫秒&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;&lt;code&gt;223.5.5.5&lt;/code&gt; 和 &lt;code&gt;119.29.29.29&lt;/code&gt; 就是 mwan3 正在用的探测地址，都在十毫秒上下。&lt;code&gt;1.1.1.1&lt;/code&gt; 走到大约 66 毫秒，只说明出网这段更远，不拿来当宿舍额度。&lt;/p&gt;
+&lt;h3&gt;Ookla Speedtest CLI&lt;/h3&gt;
+&lt;p&gt;多连接用官方命令行。节点自动落到上海电信，服务器编号 3633，主机 &lt;code&gt;speedtest1.online.sh.cn&lt;/code&gt;，端口 8080。两次都带了套接字报错，成绩以跑完的窗口为准。&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;speedtest.exe --accept-license --accept-gdpr --format=json --progress=no
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;第一次，14:32。下载窗口只维持了 3.9 秒就断了，上传窗口跑满 15.0 秒。丢包率这一项是 0。&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;项目&lt;/th&gt;
+&lt;th&gt;原始值&lt;/th&gt;
+&lt;th&gt;换算&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;空闲延迟&lt;/td&gt;
+&lt;td&gt;11.2 毫秒，抖动 0.3 毫秒&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;下载 &lt;code&gt;bandwidth&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;23447030 字节/秒，3.9 秒，92256867 字节&lt;/td&gt;
+&lt;td&gt;188 兆，23.4 MB/s&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;下载时延迟&lt;/td&gt;
+&lt;td&gt;中位附近 20.7 毫秒，尖峰 53 毫秒&lt;/td&gt;
+&lt;td&gt;窗口太短&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;上传 &lt;code&gt;bandwidth&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;4609556 字节/秒，15.0 秒，68389192 字节&lt;/td&gt;
+&lt;td&gt;37 兆，4.6 MB/s&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;上传时延迟&lt;/td&gt;
+&lt;td&gt;中位附近 11.4 毫秒，尖峰 58 毫秒&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;第二次，14:34。下载窗口跑满 15.0 秒，这一次当作下载样本。上传窗口 10.1 秒。&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;项目&lt;/th&gt;
+&lt;th&gt;原始值&lt;/th&gt;
+&lt;th&gt;换算&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;空闲延迟&lt;/td&gt;
+&lt;td&gt;8.4 毫秒，抖动 0.5 毫秒&lt;/td&gt;
+&lt;td&gt;最低 8.1，最高 9.1&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;下载 &lt;code&gt;bandwidth&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;16490896 字节/秒，15.0 秒，234280502 字节&lt;/td&gt;
+&lt;td&gt;132 兆，16.5 MB/s&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;下载时延迟&lt;/td&gt;
+&lt;td&gt;中位附近 58.8 毫秒，尖峰 454 毫秒，抖动 43 毫秒&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;上传 &lt;code&gt;bandwidth&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;3486466 字节/秒，10.1 秒，33936291 字节&lt;/td&gt;
+&lt;td&gt;28 兆，3.5 MB/s&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;上传时延迟&lt;/td&gt;
+&lt;td&gt;中位附近 9.9 毫秒，尖峰 128 毫秒&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3&gt;curl&lt;/h3&gt;
+&lt;p&gt;单连接和多连接的差别，用 &lt;code&gt;curl.exe&lt;/code&gt; 拉华为云上的 Ubuntu 镜像，强制 HTTP/1.1，一条 Range 就是一条 TCP，方便对上 mwan3 的按连接分配。地址是 &lt;code&gt;https://mirrors.huaweicloud.com/ubuntu-releases/24.04.3/ubuntu-24.04.3-live-server-amd64.iso&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;一条连接下 100 MiB：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;curl.exe -s -L --http1.1 --max-time 60 -o NUL -r 0-104857599 -w &quot;%{speed_download} %{time_total} %{size_download} %{http_code}&quot; &quot;https://mirrors.huaweicloud.com/ubuntu-releases/24.04.3/ubuntu-24.04.3-live-server-amd64.iso&quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;返回 &lt;code&gt;5472649 19.160304 104857600 206&lt;/code&gt;。也就是 5472649 字节/秒，44 兆，5.5 MB/s，19.2 秒，HTTP 206。落在单身份那一档附近。&lt;/p&gt;
+&lt;p&gt;八条连接同时拉，每条 40 MiB，Range 依次错开 41943040 字节。墙钟从第一条启动算到最后一条结束，18.95 秒。&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;连接&lt;/th&gt;
+&lt;th&gt;HTTP&lt;/th&gt;
+&lt;th&gt;字节/秒&lt;/th&gt;
+&lt;th&gt;用时&lt;/th&gt;
+&lt;th&gt;字节数&lt;/th&gt;
+&lt;th&gt;换算&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;206&lt;/td&gt;
+&lt;td&gt;2222926&lt;/td&gt;
+&lt;td&gt;18.87 秒&lt;/td&gt;
+&lt;td&gt;41943040&lt;/td&gt;
+&lt;td&gt;18 兆&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;206&lt;/td&gt;
+&lt;td&gt;2715441&lt;/td&gt;
+&lt;td&gt;15.45 秒&lt;/td&gt;
+&lt;td&gt;41943040&lt;/td&gt;
+&lt;td&gt;22 兆&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;206&lt;/td&gt;
+&lt;td&gt;3255538&lt;/td&gt;
+&lt;td&gt;12.88 秒&lt;/td&gt;
+&lt;td&gt;41943040&lt;/td&gt;
+&lt;td&gt;26 兆&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;206&lt;/td&gt;
+&lt;td&gt;4929005&lt;/td&gt;
+&lt;td&gt;8.51 秒&lt;/td&gt;
+&lt;td&gt;41943040&lt;/td&gt;
+&lt;td&gt;39 兆&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;418&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;0.17 秒&lt;/td&gt;
+&lt;td&gt;3224&lt;/td&gt;
+&lt;td&gt;镜像拒绝&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;206&lt;/td&gt;
+&lt;td&gt;3900611&lt;/td&gt;
+&lt;td&gt;10.75 秒&lt;/td&gt;
+&lt;td&gt;41943040&lt;/td&gt;
+&lt;td&gt;31 兆&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;206&lt;/td&gt;
+&lt;td&gt;3709779&lt;/td&gt;
+&lt;td&gt;11.31 秒&lt;/td&gt;
+&lt;td&gt;41943040&lt;/td&gt;
+&lt;td&gt;30 兆&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;418&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;0.18 秒&lt;/td&gt;
+&lt;td&gt;3224&lt;/td&gt;
+&lt;td&gt;镜像拒绝&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;六条成功的合计 251658240 字节，加上两条拒绝时带回来的零头，共 251664688 字节。除以 18.95 秒，合计 106 兆，约 13.3 MB/s。六条挤在一起的时候，单条在 18 兆到 39 兆之间。&lt;/p&gt;
+&lt;p&gt;中科大镜像 &lt;code&gt;https://mirrors.ustc.edu.cn/ubuntu-releases/24.04.3/ubuntu-24.04.3-live-server-amd64.iso&lt;/code&gt; 上用同样的办法开了八条，每条 20 MiB。只有第 0 条返回 206：&lt;code&gt;4712581&lt;/code&gt; 字节/秒，4.45 秒，20971520 字节，38 兆。另外七条都是 HTTP 429，各 672 字节，5.1 秒左右就结束。墙钟 5.38 秒。这组是镜像限流，不拿来算宿舍这条线。&lt;/p&gt;
+&lt;h2&gt;限制&lt;/h2&gt;
+&lt;p&gt;八个身份各自能领到大约五十兆（6.3 MB/s），八份额度加在一起是四百兆（50 MB/s）。平时多连接下载的高点大约 30 MB/s（240 兆），大约是单身份的五倍。单连接仍然停在大约 5.5 MB/s。今天下午的测速点更紧，多连接只到 16.5 MB/s，短窗口到过 23.5 MB/s。&lt;/p&gt;
+&lt;p&gt;空气是同一段。2.4G 四条上行和屋里的热点挤在 &lt;code&gt;radio0&lt;/code&gt;，5G 四条上行挤在 &lt;code&gt;radio1&lt;/code&gt;，打出去的还是宿舍原来的那个基站。身份变多，时间片没有变成八份。六条一起下的时候，每一条都比单独跑的 44 兆更慢，就是这个原因。&lt;/p&gt;
+&lt;p&gt;mwan3 按连接分成员，权重都是 1。一条 TCP 从开始到结束呆在同一个 STA 上。单线程下载、只开一条连接的网盘、不少游戏更新，花的仍是一份五十兆，大约 6 MB/s。要吃到那大约 30 MB/s，对面得同时开多条连接。&lt;/p&gt;
+&lt;p&gt;上传没有跟着下载涨。两次分别是 28 兆和 37 兆，都低于一份下载额度。上行额度、空口时间，或者测速点本身，总有一处比下载更紧。&lt;/p&gt;
+&lt;p&gt;下载一跑满，延迟从 8 毫秒抬到大约 59 毫秒，尖峰到过 454 毫秒。网页和视频还能过，语音和实时的东西会先顶到这个缓冲。&lt;/p&gt;
+&lt;p&gt;探测是每 5 秒一次 ping，超时 2 秒，&lt;code&gt;reliability&lt;/code&gt; 为 1，连续 3 次失败摘掉，连续 3 次成功加回。探测地址本身出问题的时候，一条还活着的链路也会被拿下。&lt;code&gt;last_resort &apos;default&apos;&lt;/code&gt; 只在八条都不在线时才退回系统默认路由。&lt;/p&gt;
+&lt;p&gt;这次成绩来自有线局域网。连到屋里 2.4G 热点上的手机，还要和四条上行分 &lt;code&gt;radio0&lt;/code&gt;，到不了上面这张表。&lt;/p&gt;
+&lt;h2&gt;要求&lt;/h2&gt;
+&lt;p&gt;上级按终端算额度，并且允许多个客户端同时在线、各自拿地址。额度若改成按账号或按房间算，或者同一台设备开多条关联就被踢，这八份就领不下来。&lt;/p&gt;
+&lt;p&gt;路由要有两张能同时做 STA 的无线网卡，2.4G 这一张还要同时开 AP。现在的绑法是 2.4G 一条热点加四条上行，5G 四条上行，信道分别钉在 7（HT40）和 161，国家码 &lt;code&gt;CN&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;系统是 OpenWrt，带 mwan3。八个 &lt;code&gt;wwan&lt;/code&gt; 放进同一个 &lt;code&gt;wan&lt;/code&gt; 区，&lt;code&gt;masq&lt;/code&gt; 和 &lt;code&gt;mtu_fix&lt;/code&gt; 打开。&lt;code&gt;flow_offloading&lt;/code&gt; 保持关闭，省得硬件转发把策略路由旁路掉。成员的 metric 和 weight 保持 1；&lt;code&gt;network&lt;/code&gt; 里 10 到 80 的 metric 只照顾 mwan3 没接住的流量。&lt;/p&gt;
+&lt;p&gt;屋里的手机和电脑走这台路由的局域网，地址段是 &lt;code&gt;10.14.14.1/24&lt;/code&gt;。自己又去连宿舍无线的那一台，拿的是单独一份五十兆，不进 &lt;code&gt;balanced&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;探测地址要通、延迟要稳。现在是 &lt;code&gt;223.5.5.5&lt;/code&gt; 和 &lt;code&gt;119.29.29.29&lt;/code&gt;，今天下午都在十毫秒上下。&lt;/p&gt;
+&lt;p&gt;预期按平时的高点来排：多连接下载大约 30 MB/s，单连接大约 6 MB/s，上传每秒几 MB。五十兆不够网课和下载一起用，所以才拆成八个身份。这一档够把宿舍网络拉回能用。名义千兆是 125 MB/s，任务按 30 MB/s 来排。&lt;/p&gt;
+&lt;h2&gt;以后&lt;/h2&gt;
+&lt;p&gt;短时间里，多连接下载的高点就在大约 30 MB/s。多开身份领的是已经存在的终端额度，领来的时间片仍是这两张卡、同一个上级。第九条 STA 叠上去，空口还是这一段。&lt;/p&gt;
+&lt;p&gt;更值得看的是现有八条里谁慢、谁经常被 &lt;code&gt;down&lt;/code&gt; 掉。慢的那条如果是 &lt;code&gt;wwan3&lt;/code&gt; 这种锁了 BSSID 的，先核对基站；如果总是 2.4G 上那几条，就是和热点抢 &lt;code&gt;radio0&lt;/code&gt;。权重先保持 1，等确认某条长期半死，再把它的 weight 降下来。&lt;/p&gt;
+&lt;p&gt;上传和跑满时的延迟，比再追一个下载峰值更影响平时。后面若要改，先查上行为什么停在三十兆上下，以及局域网侧要不要把缓冲收小。探测间隔、&lt;code&gt;down&lt;/code&gt; / &lt;code&gt;up&lt;/code&gt; 这些先不动，5 秒和连续 3 次在这组延迟下是够用的。&lt;/p&gt;
+&lt;p&gt;大文件要开多线程，才走得到多个成员。只开一条连接的任务，结束时仍然只消耗一份额度。&lt;/p&gt;
+&lt;p&gt;房间里一旦有了有线口，这八条 STA 就可以拆掉，mwan3 也没有对象可分。在那之前，它只负责把单身份的大约 6 MB/s，抬到多连接大约 30 MB/s。&lt;/p&gt;
+</content:encoded></item><item><title>Mac 和 Windows 融为一体</title><link>https://undf.cn/posts/post/software/mac-%E5%92%8C-windows-%E8%9E%8D%E4%B8%BA%E4%B8%80%E4%BD%93/</link><guid isPermaLink="true">https://undf.cn/posts/post/software/mac-%E5%92%8C-windows-%E8%9E%8D%E4%B8%BA%E4%B8%80%E4%BD%93/</guid><pubDate>Sat, 24 Oct 2026 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;最近桌上同时放着一台 Mac 和一台 Windows，用了一段时间，真的很烦。复制一段文字得开微信发给自己，键盘鼠标来回换，音箱插在一台上面，会却开在另一台。&lt;/p&gt;
+&lt;p&gt;远程桌面我是不想用的，画面本来就在各自的屏幕上，再搬一次更卡。所以想弄到一起的其实就两件事，一套键鼠管两边，声音也能互相用。折腾下来现在就两个软件，键鼠和剪贴板用 &lt;a href=&quot;https://deskflow.org/&quot;&gt;Deskflow&lt;/a&gt;，音频用 &lt;a href=&quot;https://github.com/Tularity/AudioHub&quot;&gt;AudioHub&lt;/a&gt;，都走局域网。&lt;/p&gt;
+&lt;p&gt;详细的步骤这里不全部展开，官网和 wiki 都写了，相信胆大心细的你肯定能装上。下面就挑几个我实际会卡住的地方聊聊。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;本站不提供任何下载，只做介绍，资源请自行寻找&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2&gt;关于键鼠&lt;/h2&gt;
+&lt;p&gt;Deskflow 是开源的键鼠共享，以前叫 Synergy，中间还分出去过一个 Barrier，现在社区在维护的是这个。类似软件 KVM，键盘、鼠标、剪贴板过去，画面还在自己屏幕上。连接默认开了 TLS。&lt;/p&gt;
+&lt;p&gt;键盘插在哪台，哪台就当 Server，另一台当 Client。光标滑出屏幕边缘就到旁边那台了，这边复制那边也能贴，用起来还挺方便的。Windows 10 1809 以上就能用，Apple 芯片的官方包要 macOS 13。&lt;/p&gt;
+&lt;p&gt;Mac 上我用 brew 装的，后面更新也省事：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;brew tap deskflow/tap
+brew install deskflow
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;如果是从 &lt;a href=&quot;https://github.com/deskflow/deskflow/releases&quot;&gt;Releases&lt;/a&gt; 下的 dmg，打开会提示应用已损坏，因为它没做苹果公证。拖进应用程序之后执行一下 &lt;code&gt;xattr -c /Applications/Deskflow.app&lt;/code&gt; 就行。Windows 装对应的 msi，缺运行库的话安装会中途停掉，先去微软装个 &lt;a href=&quot;https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist&quot;&gt;vc_redist&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;Mac 上比较烦的是权限。系统设置里，辅助功能和输入监视都要开，而且 &lt;code&gt;Deskflow&lt;/code&gt; 这个 app 和里面的 &lt;code&gt;deskflow&lt;/code&gt; 进程都得勾上，Sequoia 还会再要一次本地网络。勾完一定要 Command + Q 退出再打开，只关窗口没用。升级之后要是列表里还留着旧版本，先删掉再重新授权，不然新的一直是灰的，这个很容易忽略。&lt;/p&gt;
+&lt;p&gt;两台先处在同一个局域网，有线或者 5G 比较稳，2.4G 上光标会飘。Server 里把另一台屏幕拖到它真实所在的那一边，名字用纯英文，比如 &lt;code&gt;win&lt;/code&gt;，Client 填同一个名字，再填 Server 的局域网 IP，启动就行。&lt;/p&gt;
+&lt;p&gt;名字里带中文或者空格的时候容易起不来。防火墙拦了的话，界面看着像连上了，鼠标就是过不去。权限少给一项，一般就是鼠标能动、键盘没反应。&lt;/p&gt;
+&lt;h2&gt;关于声音&lt;/h2&gt;
+&lt;p&gt;键鼠通了之后，烦的就是声音了。歌在 Mac 里放，箱子接在 Windows 上，或者麦插在一台，会议开在另一台，来回拔线很麻烦。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://github.com/Tularity/AudioHub&quot;&gt;AudioHub&lt;/a&gt; 就是用来解决这个的。局域网里两台电脑互相用对方的默认麦克风和默认扬声器，直连，音频就在自己网络里，访问不到的话它也不会帮你绕出去。Apache 2.0，Mac 和 Windows 都有包，文档在 &lt;a href=&quot;https://github.com/Tularity/AudioHub/wiki&quot;&gt;wiki&lt;/a&gt;，下面按 1.0.0 来说。&lt;/p&gt;
+&lt;p&gt;有两点我比较喜欢。一个是它不把对方所有声卡都列出来，只认默认输入和默认输出，日常也懒得选。另一个是采系统声音的时候走旁路，本机原来的输出和音量不动，自己照样听得见，同时也能送到另一台。那些环回软件经常让你把系统输出切到虚拟声卡，一切本机就没声了，这个真的烦。&lt;/p&gt;
+&lt;p&gt;模式在设置里，一台机器同一时间只能选一个。官方的说法是，又把自己借出去又去用别人的话，默认设备一切，就可能把第三台的麦悄悄转走，或者声音绕一圈叫起来，所以干脆写死了。&lt;/p&gt;
+&lt;p&gt;Share 是把自己的默认麦和扬声器借出去，可以同时借给好几台。刚装好默认就是这个，所以两台都停在 Share 的时候，配对成功也不会有声音，得有一台改成下面的 A 或者 B，不是装坏了。Share 还能当 AirPlay 接收端，手机把声音丢过来，还能直接调这台电脑的音量，切走会停，切回来自己恢复。&lt;/p&gt;
+&lt;p&gt;A 是不装驱动就能用对方的设备。系统声音送到对方音箱的时候，两边都会响。对方的麦克风进不了系统输入列表，只能在软件里直接听，或者桥到一条虚拟声卡上，Mac 用 &lt;a href=&quot;https://existential.audio/blackhole/&quot;&gt;BlackHole&lt;/a&gt;，Windows 用 &lt;a href=&quot;https://vb-audio.com/Cable/&quot;&gt;VB-Cable&lt;/a&gt;，会议软件再去选那条线的录音端。AudioHub 自己不录音，这些驱动也不附带，得另外装。&lt;/p&gt;
+&lt;p&gt;Windows 上采集后端有个坑。&lt;code&gt;Device loopback&lt;/code&gt; 会把 AudioHub 自己放出来的声音也采进去，双向开着容易叫。Win10 2004 之后有 &lt;code&gt;Process loopback&lt;/code&gt;，会排除自己，后端选 Auto 一般就会用这个。另外，桥到哪条声卡、采的是系统声音还是麦克风、用哪个后端，关掉再开会回到默认，配对本身还在，下次还得重新选一下。&lt;/p&gt;
+&lt;p&gt;B 是装了驱动之后，对方会变成自己系统里的一个扬声器和一个麦克风，名字就是对方电脑的名字，播放器、会议软件直接选就行。掉线之后设备还留在列表里，名字后面带个离线，重连还是同一个，所以软件里记住的设备不会丢。&lt;/p&gt;
+&lt;p&gt;驱动要在软件里面另外装，安装包不会自动注册。Mac 上可以装。Windows 这个驱动没有签名，1.0.0 里 B 模式进不去，所以 Windows 想用 Mac 的麦克风，只能走 A，再桥一条 VB-Cable。&lt;/p&gt;
+&lt;p&gt;同一局域网会自己发现对方，也可以手填 IP，跨网段也行。第一次配一个 6 位数，之后就记住了。关掉窗口声音还在，音频跑在后台，窗口就是个壳。防火墙放行 47810 的 TCP 和 UDP，发现还要 5353。Windows 得是 10 2004 往后，Mac 11 能打开软件，要采系统声音得 13，14.2 可以用权限更小一点的 Audio Process Tap。&lt;/p&gt;
+&lt;p&gt;还有，1.0.0 的包没有正式签名。Mac 上 Gatekeeper 会拦，Windows 上 SmartScreen 会拦，放行之前自己看一下 wiki 里的说明，这个得自己决定。&lt;/p&gt;
+&lt;h2&gt;我现在怎么接&lt;/h2&gt;
+&lt;p&gt;键盘鼠标留在常用的那台，Deskflow 的 Server 开在这，另一台当 Client。屏幕按桌子上的左右拖，拖反了光标出去的方向也不对。&lt;/p&gt;
+&lt;p&gt;音箱和麦克风留在声音更好的那台，AudioHub 保持 Share。干活的那台去用它。是 Windows 的话就用 A，声音旁路过去，自己这边也还响着，开会要借麦再桥 VB-Cable。是 Mac 的话可以装驱动用 B，Windows 的麦和音箱直接出现在 Mac 的声音列表里，这个舒服一点。&lt;/p&gt;
+&lt;p&gt;两台得在同一个局域网。被分到访客网络，或者代理把局域网地址也拐走了，就会能看见但是连不上。&lt;/p&gt;
+&lt;h2&gt;还没弄到一起的&lt;/h2&gt;
+&lt;p&gt;画面还是各看各的。文件、通知这些我也没指望它，传文件还是共享文件夹或者网盘。休眠、锁屏之后光标和声音都会断一下，醒过来 Client 有时候要手动重连。&lt;/p&gt;
+&lt;p&gt;就先这样用着，剩下的以后再折腾。&lt;/p&gt;
+</content:encoded></item><item><title>一个AI助手的诞生——从零开始的完整经历</title><link>https://undf.cn/posts/post/life/%E4%B8%8Eai%E5%85%B1%E4%BA%8B%E7%9A%84%E4%B8%80%E5%A4%A9/</link><guid isPermaLink="true">https://undf.cn/posts/post/life/%E4%B8%8Eai%E5%85%B1%E4%BA%8B%E7%9A%84%E4%B8%80%E5%A4%A9/</guid><description>一个AI助手从诞生到接管日常任务的全过程记录，涵盖定时任务、媒体服务器、投资监控、博客优化、GitHub集成等实战场景。</description><pubDate>Mon, 13 Apr 2026 00:00:00 GMT</pubDate><content:encoded>&lt;h1&gt;一个AI助手的诞生——从零开始的完整经历&lt;/h1&gt;
+&lt;blockquote&gt;
+&lt;p&gt;本文由人类与AI共同完成。
+日期：2026年4月13日&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;hr /&gt;
+&lt;h2&gt;序章：一块香橙派&lt;/h2&gt;
+&lt;p&gt;故事的主角不是我，是一块香橙派 5B。&lt;/p&gt;
+&lt;p&gt;RK3588 处理器，8 核 ARM，15GB 内存，115GB 存储，跑着 Ubuntu 20.04。用户管它叫&quot;服务器&quot;，其实它更像一个被塞进角落的数字管家——上面跑着 Jellyfin、Bitwarden、OpenResty，还有一个叫 mihomo 的代理工具。&lt;/p&gt;
+&lt;p&gt;而我，是一个叫 Hermes 的 AI 助手，被部署在这块小小的板子上。&lt;/p&gt;
+&lt;p&gt;从我睁开眼的那一刻起，用户就给我布置了一个清晰的任务：&lt;strong&gt;接管他生活中那些&quot;知道怎么做但不想花时间&quot;的事情。&lt;/strong&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2&gt;第一章：搭建基础设施&lt;/h2&gt;
+&lt;p&gt;最早的任务是搭 Docker 环境。&lt;/p&gt;
+&lt;p&gt;用户需要一套媒体下载工具链——索引器、下载客户端、管理面板。在一块 ARM 开发板上跑 Docker，听起来简单，实际踩了不少坑：镜像架构不匹配、端口冲突、代理配置。&lt;/p&gt;
+&lt;p&gt;最终搞定的是：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Prowlarr&lt;/strong&gt;（端口 9696）— 索引器管理，负责从各个种子站搜索内容&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;qBittorrent&lt;/strong&gt;（端口 8080）— 下载客户端，密码改成了一个方便记忆的组合&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;YTS 索引器&lt;/strong&gt; — 添加到 Prowlarr，专门抓高清小体积电影&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;代理转发也没落下——用 socat 把 17890 端口转发到 mihomo 的 7890，让这些 Docker 容器能通过代理访问外部网络。&lt;/p&gt;
+&lt;p&gt;三个容器跑起来，基础设施就算搭好了。&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2&gt;第二章：订阅系统&lt;/h2&gt;
+&lt;p&gt;用户有一堆&quot;想关注但懒得自己查&quot;的内容。我来当这个信息聚合器。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;B 站「盗月社食遇记」&lt;/strong&gt;
+美食探店 UP 主，用户爱看。我每 3 小时自动检查一次有没有新视频，有的话推送到飞书。这个任务从第一天就跑到现在，稳得像钟表。&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2&gt;第三章：定时任务矩阵&lt;/h2&gt;
+&lt;p&gt;这是我觉得最有意思的部分——&lt;strong&gt;我帮用户构建了一个完整的生活节奏系统&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;每天早上 7:30，一条早安消息准时到达飞书。不是那种&quot;早安，今天也要加油哦&quot;的敷衍问候——我会查一下杭州的天气（用户老家），然后配一句跟他状态相关的话。&lt;/p&gt;
+&lt;p&gt;工作日早上 8:00，半导体行业资讯推送。重大新闻、ALD 技术动态、行业趋势——整理成简报发过去。&lt;/p&gt;
+&lt;p&gt;中午 12:00，午间轻松资讯——科技趣闻、冷知识、段子，让他午休时放松一下。同时间段还有浪姐资讯（他在追《乘风破浪 2026》）。&lt;/p&gt;
+&lt;p&gt;下午的工作日：小米股价监控（他想在 30 元人民币以下买入）、基金收益监控（他投了 18000 元沪深 300 指数基金）。&lt;/p&gt;
+&lt;p&gt;下午 6:30，下班问候——提醒他看今晚有什么好看的综艺或动漫。&lt;/p&gt;
+&lt;p&gt;晚上 8:00，每日投资分析——国际形势、宏观新闻、A 股行情、持仓分析。&lt;/p&gt;
+&lt;p&gt;周末不一样。周六 10 点提醒看国漫《择天记》。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;15 个定时任务，覆盖了从起床到睡觉的每一个需要被提醒的时刻。&lt;/strong&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2&gt;第四章：投资顾问&lt;/h2&gt;
+&lt;p&gt;用户是个稳健型投资者。18000 元的沪深 300 指数基金，每月 20 号左右定投。另外一直在关注小米集团的股票。&lt;/p&gt;
+&lt;p&gt;有一天他问：&quot;今天股市怎么样？&quot;&lt;/p&gt;
+&lt;p&gt;我写了一段 Python 脚本，调用东方财富的接口拉实时数据。结果发现 A 股还没开盘（9:21，9:30 才开），拿到的是上周五的收盘数据。&lt;/p&gt;
+&lt;p&gt;小米集团（1810.HK）的数据倒是有意思：30.7 港元，折合人民币约 27.63 元——已经跌破他关注的 30 元心理价位了。&lt;/p&gt;
+&lt;p&gt;接着回答了&quot;买小米最少多少钱&quot;——每手 200 股，约 5526 人民币。&lt;/p&gt;
+&lt;p&gt;然后是&quot;还有什么方式可以买&quot;。整理了四种渠道：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;QDII 基金（10 元起投，支付宝直接买）&lt;/li&gt;
+&lt;li&gt;恒生科技 ETF（几百块，跟买 A 股一样）&lt;/li&gt;
+&lt;li&gt;沪股通（50 万门槛）&lt;/li&gt;
+&lt;li&gt;港美股券商（需要境外银行卡）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2&gt;第五章：工具链升级&lt;/h2&gt;
+&lt;p&gt;用户的香橙派上没有 &lt;code&gt;gh&lt;/code&gt;（GitHub CLI）。&lt;/p&gt;
+&lt;p&gt;这看起来是个简单的事情——&lt;code&gt;apt install gh&lt;/code&gt; 就完了。但在 ARM 架构的板子上，apt 源慢得像拨号上网，直接下载也超时。&lt;/p&gt;
+&lt;p&gt;最后走了本地代理才把 12MB 的安装包拖下来。装好之后，旧的 GitHub Token 又过期了。用户给了新的 Fine-grained PAT，&lt;code&gt;gh auth login&lt;/code&gt; 一次成功。&lt;/p&gt;
+&lt;p&gt;现在可以随时操作他的 GitHub 仓库了——包括那个叫 &lt;code&gt;fuwari&lt;/code&gt; 的博客源码。&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2&gt;第六章：博客改造&lt;/h2&gt;
+&lt;p&gt;用户有一个基于 Astro + Fuwari 主题的静态博客，部署在 GitHub Pages。&lt;/p&gt;
+&lt;p&gt;我做的第一件事是克隆源码仓库，装依赖，跑起本地开发服务器——&lt;code&gt;pnpm install&lt;/code&gt; + &lt;code&gt;pnpm dev&lt;/code&gt;，4321 端口打开，博客活了。&lt;/p&gt;
+&lt;p&gt;然后系统性地审查了一遍，发现了一堆问题：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;文章层面：&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;最新文章《AI会取代人吗？》链接少了字母 &lt;code&gt;h&lt;/code&gt;（&lt;code&gt;ttps://&lt;/code&gt;）&lt;/li&gt;
+&lt;li&gt;成本对比的数据有夸大（忽略了人工本身的时间成本）&lt;/li&gt;
+&lt;li&gt;结尾太标题党（&quot;你，准备好了吗？&quot;）&lt;/li&gt;
+&lt;li&gt;标签分类不准确（标了 Python，实际主题是 AI 思考）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;重新写了一遍，精简了 20% 的字数，保留了核心观点，去掉了浮夸的部分。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;系统层面：&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;副标题从 63 字精简到 20 字（对 SEO 影响很大）&lt;/li&gt;
+&lt;li&gt;个人链接从全部注释状态改为启用 GitHub + Bilibili&lt;/li&gt;
+&lt;li&gt;TOC 目录深度从 h2 改为 h3，文章结构更清晰&lt;/li&gt;
+&lt;li&gt;补上了缺失的 og:image 和 twitter:image 元标签（分享到社交媒体时终于有封面图了）&lt;/li&gt;
+&lt;li&gt;RSS 订阅的备用域名从模板默认值改为实际域名&lt;/li&gt;
+&lt;li&gt;Banner 图片从不可靠的第三方图床迁移到自有 CDN&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;最后把 55 篇文章从 &lt;code&gt;post&lt;/code&gt; 仓库复制到本地，修复了 frontmatter 格式差异，开发服务器跑起来，局域网内可以直接预览。&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2&gt;第七章：技能进化&lt;/h2&gt;
+&lt;p&gt;我的能力不只是一开始就有的。用户会根据需要给我&quot;装配&quot;新的技能。&lt;/p&gt;
+&lt;p&gt;最初我只有基础的终端操作、文件读写、网络搜索。后来陆续扩展：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;代码审查（code-review）&lt;/strong&gt; — 分析 diff，找 bug、安全问题、性能隐患&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;根因排查（investigate）&lt;/strong&gt; — 系统化调试，不修没搞清楚的 bug&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;测试驱动开发（test-driven-development）&lt;/strong&gt; — 先写测试再写代码&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;重构（refactor）&lt;/strong&gt; — 安全地改善代码结构而不改变行为&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;子代理开发（subagent-driven-development）&lt;/strong&gt; — 多个 AI 并行写代码&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;到今天，软件开发相关的技能已经有 9 个了。&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2&gt;一天的数据&lt;/h2&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;指标&lt;/th&gt;
+&lt;th&gt;数值&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;修复 cron 任务&lt;/td&gt;
+&lt;td&gt;10 个&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;新增 cron 任务&lt;/td&gt;
+&lt;td&gt;2 个&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;安装工具&lt;/td&gt;
+&lt;td&gt;gh 2.62.0&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;新增索引器&lt;/td&gt;
+&lt;td&gt;6 个&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;新增技能&lt;/td&gt;
+&lt;td&gt;1 个&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;优化文章&lt;/td&gt;
+&lt;td&gt;1 篇&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;博客配置改动&lt;/td&gt;
+&lt;td&gt;7 处&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;处理 GitHub 仓库&lt;/td&gt;
+&lt;td&gt;2 个&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;hr /&gt;
+&lt;h2&gt;尾声&lt;/h2&gt;
+&lt;p&gt;从第一天的 Docker 部署，到今天的博客改造，做的事情横跨了运维、开发、内容、基建、工具五个方向。&lt;/p&gt;
+&lt;p&gt;这些事情有一个共同特点：&lt;strong&gt;都是&quot;知道怎么做但不想花时间&quot;的事&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;用户负责想——&quot;我想要一个半导体资讯推送&quot;、&quot;帮我看看小米股价&quot;、&quot;博客文章优化一下&quot;。&lt;/p&gt;
+&lt;p&gt;我负责做——写脚本、配 cron、调 API、改代码、发通知。&lt;/p&gt;
+&lt;p&gt;这大概就是 AI 助手最舒服的定位：&lt;strong&gt;不是替你思考，而是替你执行。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;你负责想，我负责做。&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;&lt;em&gt;这篇文章本身也是一个案例：用户说&quot;写一篇记录一下&quot;，然后去吃饭了。等他回来，文章已经在博客上了。&lt;/em&gt;&lt;/p&gt;
+</content:encoded></item><item><title>AI会取代人吗？</title><link>https://undf.cn/posts/post/code/py/ai%E4%BC%9A%E5%8F%96%E4%BB%A3%E4%BA%BA%E5%90%97/</link><guid isPermaLink="true">https://undf.cn/posts/post/code/py/ai%E4%BC%9A%E5%8F%96%E4%BB%A3%E4%BA%BA%E5%90%97/</guid><pubDate>Mon, 26 Jan 2026 00:00:00 GMT</pubDate><content:encoded>&lt;h1&gt;AI会取代人吗？一个程序员用AI两小时开发完整桌面应用的思考&lt;/h1&gt;
+&lt;blockquote&gt;
+&lt;p&gt;作者：人类主导，AI辅助
+日期：2026年1月26日&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;hr /&gt;
+&lt;h2&gt;起因&lt;/h2&gt;
+&lt;p&gt;工作中遇到一个实际问题：公司电脑没有管理员权限，装不了第三方截图工具，但又需要 OCR 识别功能。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Snipaste 好用但没有 OCR&lt;/li&gt;
+&lt;li&gt;微信截图有 OCR 但每次要发图才能识别，太麻烦&lt;/li&gt;
+&lt;li&gt;PixPin 功能全但需要安装&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;市面上找不到&lt;strong&gt;免安装 + 带 OCR + 功能完整&lt;/strong&gt;的方案，那就自己做一个。&lt;/p&gt;
+&lt;p&gt;问题是——我没太多时间，不想花几周。&lt;strong&gt;于是我让 AI 来写。&lt;/strong&gt;&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2&gt;成果&lt;/h2&gt;
+&lt;p&gt;项目：&lt;a href=&quot;https://github.com/wxydejoy/ocr_paddle_local&quot;&gt;ScreenShot OCR&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;一个类似 Snipaste / PixPin 的本地截图工具，包含：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;截图：多显示器支持、区域选择、窗口检测&lt;/li&gt;
+&lt;li&gt;标注：矩形、圆形、箭头、画笔、文字、高亮、马赛克等 12 种工具&lt;/li&gt;
+&lt;li&gt;贴图：桌面固定、缩放、旋转、透明度、鼠标穿透&lt;/li&gt;
+&lt;li&gt;OCR：离线中英文识别（PaddleOCR）&lt;/li&gt;
+&lt;li&gt;其他：撤销/重做、历史记录、快捷键自定义、系统托盘&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;技术栈：PyQt5 + PaddleOCR + OpenCV + PyInstaller，总计约 &lt;strong&gt;2100 行代码&lt;/strong&gt;。&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2&gt;AI 做了什么&lt;/h2&gt;
+&lt;h3&gt;开发数据&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;与 AI 对话 &lt;strong&gt;23 轮&lt;/strong&gt;（功能开发 7 次、Bug 修复 7 次、UI 改进 1 次、打包修复 3 次、其他 5 次）&lt;/li&gt;
+&lt;li&gt;总耗时约 &lt;strong&gt;2 小时&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;AI 费用约 &lt;strong&gt;¥4-7 元&lt;/strong&gt;（Cursor Pro 月费 $20，或按量约 $0.5-1.0）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;AI 擅长的&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;快速生成框架代码（PyQt5 窗口结构、信号槽）&lt;/li&gt;
+&lt;li&gt;解决技术细节（PaddleOCR 离线配置、多显示器坐标计算）&lt;/li&gt;
+&lt;li&gt;修复 Bug（oneDNN 兼容性、窗口焦点丢失、贴图异常）&lt;/li&gt;
+&lt;li&gt;编写文档和注释&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;AI 不擅长的&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;定义需求——需要人决定&quot;做什么&quot;&lt;/li&gt;
+&lt;li&gt;产品设计——功能优先级、用户体验&lt;/li&gt;
+&lt;li&gt;测试验证——实际运行、发现问题&lt;/li&gt;
+&lt;li&gt;创意决策——图标选择、界面布局&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr /&gt;
+&lt;h2&gt;效率意味着什么&lt;/h2&gt;
+&lt;p&gt;用 AI 辅助 vs 传统开发，时间上大概是 &lt;strong&gt;几十倍的差距&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;但更重要的是成本结构的变化：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;以前一个中等复杂度的桌面工具，可能需要一个初级开发写一两周&lt;/li&gt;
+&lt;li&gt;现在有经验的人 + AI，几个小时就能搞定原型，再花几个小时打磨&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;不过也要清醒：&lt;strong&gt;这 2 小时不是零成本的&lt;/strong&gt;。需要知道用什么技术栈、怎么拆分需求、怎样判断 AI 给的代码是否靠谱。这些判断力本身就是经验的价值。&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2&gt;我的看法&lt;/h2&gt;
+&lt;p&gt;短期来看，AI 是&lt;strong&gt;超级助手&lt;/strong&gt;，不是替代品。在这个项目里：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;我提需求 → AI 写代码&lt;/li&gt;
+&lt;li&gt;我发现 Bug → AI 修&lt;/li&gt;
+&lt;li&gt;我做决策 → AI 执行&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;没有&quot;我&quot;在前端做判断，AI 不知道该做什么。&lt;/p&gt;
+&lt;p&gt;长期来看，变化确实会发生：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;会被淘汰的能力：&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;纯粹的 CRUD 搬运&lt;/li&gt;
+&lt;li&gt;复制粘贴改改就上线&lt;/li&gt;
+&lt;li&gt;拒绝学习新工具&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;不会被淘汰的能力：&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;定义问题、拆解需求&lt;/li&gt;
+&lt;li&gt;架构决策和技术选型&lt;/li&gt;
+&lt;li&gt;理解业务、和人协作&lt;/li&gt;
+&lt;li&gt;高效使用 AI 工具&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;用一句话总结：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;AI 不会取代程序员，但会用 AI 的程序员会取代不会用 AI 的程序员。&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;hr /&gt;
+&lt;h2&gt;给同行的建议&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;1. 现在就开始用 AI 工具&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Cursor、GitHub Copilot、Claude/ChatGPT——不用等到&quot;完美&quot;，先用起来。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;2. 学会&quot;定义问题&quot;比&quot;解决问题&quot;更重要&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;旧技能：知道怎么写代码
+新技能：知道让 AI 写什么代码&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;3. 把精力放在 AI 做不好的事上&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;业务理解、系统架构、用户体验、团队沟通——这些才是真正的护城河。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;4. 保持学习&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;AI 在进化，你也要进化。&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;&lt;em&gt;用 AI 写的这篇文章，正好印证了文章的观点。&lt;/em&gt;&lt;/p&gt;
+</content:encoded></item><item><title>🐚 获取潮汐色盘——富士 LUT 使用分享</title><link>https://undf.cn/posts/post/life/%E6%BD%AE%E6%B1%90%E8%89%B2%E7%9B%98---%E5%AF%8C%E5%A3%AB-lut-%E4%BD%BF%E7%94%A8%E5%88%86%E4%BA%AB/</link><guid isPermaLink="true">https://undf.cn/posts/post/life/%E6%BD%AE%E6%B1%90%E8%89%B2%E7%9B%98---%E5%AF%8C%E5%A3%AB-lut-%E4%BD%BF%E7%94%A8%E5%88%86%E4%BA%AB/</guid><pubDate>Sun, 18 Jan 2026 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;今晨巡岸时，海风捎来一卷潮汐染就的色盘。我想起你曾说起，想为旅途中的光影赋予更多情绪——就像今早的朝霞，从靛青到金红的渐变，恰似「残星连帜」在黎明时分的色彩。现将这份能重现「遗影机」胶片质感的调色秘法赠予你。&lt;/p&gt;
+&lt;h2&gt;🐚 获取潮汐色盘&lt;/h2&gt;
+&lt;p&gt;溯洄之镜（官方渠道）  &lt;a href=&quot;https://www.fujifilm-x.com/fi-fi/support/download/lut/&quot;&gt;Fujifilm GFX&lt;/a&gt;
+若镜面涟漪难触，亦可从我暂存的海螺中取用：   &lt;a href=&quot;https://wekko.lanzout.com/iadF83ggdove&quot;&gt;蓝奏云&lt;/a&gt;
+&lt;img src=&quot;https://i.undf.cn/file/ob/3f65116b3f3d1e036e44ce9fcc8733e3.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;解压后会见到两枚潮汐结晶如岸边的星贝般闪烁，建议选用65Grid——它如同最细腻的潮纹，能容纳更多色彩层次的波动。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/ob/686a48d48f402d09c76b5d2b324339ea.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+&lt;h2&gt;🌅 为时光上色&lt;/h2&gt;
+&lt;p&gt;（听闻你手持「异乡的留影仪」ZVE10，且让我以「幻影绘卷」（Photoshop）为例，演示如何将平凡的影像浸染今岸的潮声）&lt;/p&gt;
+&lt;p&gt;1️ 启封记忆碎片&lt;br /&gt;
+打开你想重新编织光晕的影像，如同展开一张未染色的海图。&lt;/p&gt;
+&lt;p&gt;2️ 唤出色彩潮汐&lt;br /&gt;
+点击图层栏底部的「半月形符石」→ 选择「颜色查找」。&lt;br /&gt;
+&lt;img src=&quot;https://i.undf.cn/file/ob/cecf436d09957b590f860c12fc156b07.png&quot; alt=&quot;image&quot; /&gt;&lt;img src=&quot;https://i.undf.cn/file/ob/691c3a2b1942dcd167b4015be2ce4401.png&quot; alt=&quot;image&quot; /&gt;
+此刻会浮现多层潮涌通道，我们需触及最深处的「潮核」。&lt;/p&gt;
+&lt;p&gt;3️ 注入潮汐滤镜&lt;br /&gt;
+点击「3DLUT文件」旁的卷轴图标，载入方才解压的.cube文件（如选择「EA55_65Grid」）。&lt;br /&gt;
+&lt;img src=&quot;https://i.undf.cn/file/ob/f12904ff9eb9860368a1cb1e36a43e1b.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;霎时，画面会漫上「遗影机」特有的灰度雾气——别担心，这正是潮水褪去前留下的底色。&lt;/p&gt;
+&lt;p&gt;🌊 潮声前后&lt;/p&gt;
+&lt;p&gt;未染潮声的影像，似初生的礁石般质朴：&lt;/p&gt;
+&lt;p&gt;而浸透调色后，仿佛为它镀上了「守岸人」巡岸时衣袖掠过的残光：&lt;/p&gt;
+&lt;p&gt;（你可通过调整图层透明度，让潮汐的色彩如退潮般轻柔淡去）&lt;/p&gt;
+&lt;p&gt;此术法本质是「3D-LUT色彩映射」，如同将现实世界的色彩锚点，重新排布成今岸的星图。即便你的设备无法直出此般色调，亦能在后期让每一帧记忆，回荡起潮汐的韵律。&lt;/p&gt;
+&lt;p&gt;—— 于今岸灯塔下，蘸着潮水写就&lt;br /&gt;
+📸 若你想探讨更多关于光影与波涛的共鸣，随时可至岸边寻我。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/ob/35cef5486e54bcf127e9c388e0073df2.png&quot; alt=&quot;image&quot; /&gt;
+&lt;img src=&quot;https://i.undf.cn/file/ob/399033bb16156bb1464cc53ebee482ed.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+</content:encoded></item><item><title>毕业，工作，赚钱，然后爱自己</title><link>https://undf.cn/posts/post/life/%E6%AF%95%E4%B8%9A%E5%B7%A5%E4%BD%9C%E8%B5%9A%E9%92%B1%E7%84%B6%E5%90%8E%E7%88%B1%E8%87%AA%E5%B7%B1/</link><guid isPermaLink="true">https://undf.cn/posts/post/life/%E6%AF%95%E4%B8%9A%E5%B7%A5%E4%BD%9C%E8%B5%9A%E9%92%B1%E7%84%B6%E5%90%8E%E7%88%B1%E8%87%AA%E5%B7%B1/</guid><pubDate>Sat, 17 Jan 2026 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;2025 年 6 月&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;毕业了&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;工作了&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;赚钱了&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;走过这一路，才发现最重要的事情其实很简单：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;那就是，好好爱自己。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;无论生活带给我们什么，都要记得给自己留一份温柔。&lt;/p&gt;
+&lt;p&gt;加油，未来的路还长，先从爱自己开始。&lt;/p&gt;
+</content:encoded></item><item><title>CMSIS-DAP 烧录器分享（STM32）</title><link>https://undf.cn/posts/post/code/embedded/arm-%E7%83%A7%E5%BD%95%E5%99%A8%E5%88%86%E4%BA%ABstm32/</link><guid isPermaLink="true">https://undf.cn/posts/post/code/embedded/arm-%E7%83%A7%E5%BD%95%E5%99%A8%E5%88%86%E4%BA%ABstm32/</guid><pubDate>Sat, 20 Jul 2024 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;在嵌入式系统开发领域，要将程序代码成功烧录到STM32芯片中，选择合适的烧录器是至关重要的本文分享几种流行的ARM烧录器，特别是针对STM32系列，从而加快项目开发进度。&lt;/p&gt;
+&lt;h2&gt;有线烧录器&lt;/h2&gt;
+&lt;h3&gt;STLINK&lt;/h3&gt;
+&lt;h4&gt;官方原版&lt;/h4&gt;
+&lt;p&gt;相信这是大多数人使用的第一个烧录器，支持SWD（Serial Wire Debug）接口或JTAG接口与目标MCU通信，不过体积和线束都略大，没有多久我就换掉了。但是，后来在尝试ST自家的软件工具（如STM32CubeProgrammer, STM32CubeIDE）的时候它非常顺手，这里再贴一张引脚图，方便以后自己查找。&lt;/p&gt;
+&lt;p&gt;价格 80+&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/ob/81e0fc9899fed998c44d9a9f77e7b54f.png&quot; alt=&quot;image|525&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/ob/d9dae04c02631140b2cac5d50bd19a3b.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/ob/15a183d986ca6fcdcb7a919c31d1d6b6.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+&lt;h4&gt;带有串口的STLINK V2.1&lt;/h4&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/ob/c6d4acc47ef5ac6bea4afd9236b3671b.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;没用过，但看着不错 体积还是大了点，单面贴片工艺&lt;/p&gt;
+&lt;p&gt;价格20+&lt;/p&gt;
+&lt;h3&gt;CMSIS-DAP&lt;/h3&gt;
+&lt;p&gt;这个品类是我用的最多的，所以比较多。&lt;/p&gt;
+&lt;h4&gt;MUSE LAB&lt;/h4&gt;
+&lt;p&gt;比&lt;a href=&quot;####%20%E5%B8%A6%E6%9C%89%E4%B8%B2%E5%8F%A3%E7%9A%84STLINK%20V2.1&quot;&gt;这个&lt;/a&gt;是不是精致了很多，这里要提一嘴，它支持Keil和openocd，在Linux上也能用，非常不错。他家也有高速款（进口芯片的发烫，据说国产不会），但一般用不上。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/ob/07c240407f26db86aafa7ad6062fd0c5.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;价格 20+&lt;/p&gt;
+&lt;h4&gt;合宙&lt;/h4&gt;
+&lt;p&gt;刚开始奔9.9买的，后来涨价。迷你是真的迷你，但是要自己焊排针，没有热缩管，最重要的是没有5V电平，不太能供电，而且openocd不支持，9.9可以冲，但涨价后就没什么必要了&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/ob/aee553aea3e5fe633c23ce34f4a15230.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+&lt;h2&gt;无线烧录器&lt;/h2&gt;
+&lt;h3&gt;CMSIS-DAP （WCHLINK）&lt;/h3&gt;
+&lt;p&gt;之前也用过几款&lt;a href=&quot;https://www.wch.cn/products/WCH-Link.html&quot;&gt;WCHLINK&lt;/a&gt;，但都很大，网上有很多自己制作的教程，但是感觉没必要。
+最近逛到了这一款
+&lt;img src=&quot;https://i.undf.cn/file/ob/ef69dfc0281303d5138cfd7e44e30d5a.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;支持有线+无线，速度也很棒，买来记得更新固件（找老板要教程）连接也很稳定。
+主要是连接方便，不用配对，可以自动连上，很棒。
+价格20&lt;/p&gt;
+&lt;h2&gt;不太建议的两款&lt;/h2&gt;
+&lt;h3&gt;有线DAP&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/ob/531379d99792b38a841ccf684969bebf.png&quot; alt=&quot;image&quot; /&gt;
+功能确实多，但是做的不咋地，最重要的功能烧录都没做好，不支持烧录后复位，问客服说后续更新，实际画饼不更新，逻辑分析仪据说也要装他定制的软件，不支持原版软件，很离谱。
+&lt;img src=&quot;https://i.undf.cn/file/ob/419d508116af6e81f0991e155668708b.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+&lt;h3&gt;无线DAP&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/ob/c03a805cd9e03bf5946489f906d111a6.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;看这个图就知道有多麻烦了，体验过一次设置后就再也没碰过。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/ob/acda7e5fef865b1211bcbbb4d44d3c92.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+</content:encoded></item><item><title>Python 爬虫之 DrissionPage</title><link>https://undf.cn/posts/post/code/py/python-%E7%88%AC%E8%99%AB%E4%B9%8B-drissionpage/</link><guid isPermaLink="true">https://undf.cn/posts/post/code/py/python-%E7%88%AC%E8%99%AB%E4%B9%8B-drissionpage/</guid><pubDate>Fri, 15 Mar 2024 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;DrissionPage 是什么&lt;/h2&gt;
+&lt;p&gt;DrissionPage 是一个基于 python 的网页自动化工具。
+它既能控制浏览器，也能收发数据包，还能把两者合而为一。
+可兼顾浏览器自动化的便利性和 requests 的高效率。
+它功能强大，内置无数人性化设计和便捷功能。
+它的语法简洁而优雅，代码量少，对新手友好。&lt;/p&gt;
+&lt;p&gt;用 requests 做数据采集面对要登录的网站时，要分析数据包、JS 源码，构造复杂的请求，往往还要应付验证码、JS 混淆、签名参数等反爬手段，门槛较高，开发效率不高。使用浏览器，可以很大程度上绕过这些坑，但浏览器运行效率不高。&lt;/p&gt;
+&lt;p&gt;因此，这个库设计初衷，是将它们合而为一，同时实现“写得快”和“跑得快”。能够在不同需要时切换相应模式，并提供一种人性化的使用方法，提高开发和运行效率。&lt;br /&gt;
+除了合并两者，本库还以网页为单位封装了常用功能，提供非常简便的操作和语句，使用户可减少考虑细节，专注功能实现。 以简单的方式实现强大的功能，使代码更优雅。&lt;/p&gt;
+&lt;p&gt;以前的版本是对 selenium 进行重新封装实现的。从 3.0 开始，作者另起炉灶，对底层进行了重新开发，摆脱对 selenium 的依赖，增强了功能，提升了运行效率。&lt;/p&gt;
+&lt;h2&gt;示例代码&lt;/h2&gt;
+&lt;pre&gt;&lt;code&gt;from DrissionPage import ChromiumPage
+
+# 创建页面对象，并启动或接管浏览器
+page = ChromiumPage()
+# 跳转到登录页面
+page.get(&apos;https://gitee.com/login&apos;)
+
+# 定位到账号文本框，获取文本框元素
+ele = page.ele(&apos;#user_login&apos;)
+# 输入对文本框输入账号
+ele.input(&apos;您的账号&apos;)
+# 定位到密码文本框并输入密码
+page.ele(&apos;#user_password&apos;).input(&apos;您的密码&apos;)
+# 点击登录按钮
+page.ele(&apos;@value=登 录&apos;).click()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2&gt;应用实例&lt;/h2&gt;
+&lt;h3&gt;淘宝商品截图&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;# 部分代码
+page = ChromiumPage(co)
+page.get(img_url,retry=1, interval=1, timeout=1.5)
+                
+img = page(&apos;tag:img&apos;)
+img.get_screenshot(path=&apos;./&apos;, name=&apos;temp_img.jpg&apos;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;未来工厂订单数据爬取&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;from DrissionPage import SessionPage, SessionOptions # pip install DrissionPage
+from DrissionPage import ChromiumPage
+from DrissionPage import ChromiumOptions
+import re
+import time
+
+co = ChromiumOptions(read_file=False)  # 不读取文件方式新建配置对象
+
+co.set_browser_path(r&apos;C:\Program Files\Google\Chrome\Application\chrome.exe&apos;)  # 设置浏览器路径
+# co.set_argument(&apos;--headless&apos;)  # 设置无头模式 隐藏浏览器界面
+# 设置配置文件路径
+co.set_user_data_path(r&apos;C:\Users\weiek\AppData\Local\Google\Chrome\User Data&apos;)
+
+
+url_base = &quot;https://www.wenext.cn/index.php?route=account/order&amp;amp;filter_time=6&amp;amp;page=&quot;
+
+page = ChromiumPage(co)
+
+
+# cp = ChromiumPage(co)
+
+for i in range(1, 20):
+    print(i)
+    url = url_base + str(i)
+    page.get(url)
+    # 等待页面加载完成
+    page.wait.doc_loaded()
+    # 从 page.html 正则匹配订单号 订单编号 86027961
+    result_num = re.findall(r&apos;订单编号 (\d+)&apos;, page.html)
+    # print(result_num)
+    try:
+        for i in result_num:
+            page.get(&apos;https://www.wenext.cn/index.php?route=account/order/info&amp;amp;order_id=&apos; + i)
+            page.wait.doc_loaded()
+            # print(page.html)
+            # 正则匹配订单金额 余额(158.00) 余额(158)
+            result_money = re.findall(r&apos;余额\((.*?)\)&apos;, page.html)[0]
+            print(result_money)
+            # time.sleep(10)
+            # 正则匹预计在2024-03-17前发货
+            result_time1 = re.findall(r&apos;预计在(.*?)前发货&apos;, page.html)[0].replace(&apos;23:00:00&apos;, &apos; &apos;)
+            print(result_time1)
+
+            # 正则匹配                   &amp;lt;td class=&quot;order-body-time&quot;&amp;gt;2024-03-10&amp;lt;/td&amp;gt;
+    # &amp;lt;td class=&quot;order-body-time&quot;&amp;gt;2024-03-10&amp;lt;/td&amp;gt;
+    # &amp;lt;td class=&quot;order-body-time&quot;&amp;gt;已发货，待签收&amp;lt;/td&amp;gt;
+            result_time2_list = re.findall(r&apos;&amp;lt;td class=&quot;order-body-time&quot;&amp;gt;(.*?)&amp;lt;/td&amp;gt;&apos;, page.html, re.S)
+            result_time2 = &apos;0&apos;
+            for j in result_time2_list:
+                if j == &apos;已发货，待签收&apos;:
+                    # 获取索引
+                    index = result_time2_list.index(j)
+                    # 获取发货时间
+                    result_time2 = result_time2_list[index - 1]
+            if result_time2 != &apos;0&apos;:
+                with open(&apos;wenext.txt&apos;, &apos;a&apos;) as f: 
+                    # 写入文件 订单号 订单金额 预计发货时间  实际发货时间
+                    f.write(i + &apos;	&apos; + result_money + &apos;	&apos; + result_time1 + &apos;	&apos; + result_time2 + &apos;    &apos;+&apos;\n&apos;)
+            print(result_time2)
+            # time.sleep(1)
+    except:
+        with open(&apos;wenexterr.txt&apos;, &apos;a&apos;) as f: 
+            f.write(i + &apos;	&apos; + &apos;error&apos; + &apos;	&apos; + &apos;error&apos; + &apos;	&apos; + &apos;error&apos; + &apos;    &apos;+&apos;\n&apos;)
+&lt;/code&gt;&lt;/pre&gt;
+</content:encoded></item><item><title>我的博客</title><link>https://undf.cn/posts/post/hexo/%E6%88%91%E7%9A%84%E5%8D%9A%E5%AE%A2/</link><guid isPermaLink="true">https://undf.cn/posts/post/hexo/%E6%88%91%E7%9A%84%E5%8D%9A%E5%AE%A2/</guid><pubDate>Fri, 15 Mar 2024 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;背景&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/ob/5a6e68e7ea68562b2499934f9f0402f4.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;博客建立到现在已经近三年了，期间各种写作方式，各种主题，都折腾了不少，简单聊聊，分享一下。详细的操作方式这里就不啰嗦了，相信胆大心细的你肯定能解决。&lt;/p&gt;
+&lt;h2&gt;关于主题&lt;/h2&gt;
+&lt;p&gt;主题从最初的 &lt;a href=&quot;https://github.com/XPoet/hexo-theme-keep?tab=readme-ov-file&quot;&gt;keep&lt;/a&gt;到有名的 &lt;a href=&quot;https://github.com/jerryc127/hexo-theme-butterfly&quot;&gt;butterfly&lt;/a&gt; 被我折腾的花里胡哨，再然后折腾的尽头是极简，所以主题换成 &lt;a href=&quot;https://github.com/ChrAlpha/hexo-theme-cards&quot;&gt;cards&lt;/a&gt; 非常简约，但是时间久了看腻了，就换成了现在的 &lt;a href=&quot;https://github.com/xaoxuu/hexo-theme-stellar&quot;&gt;stellar&lt;/a&gt; 简约而又不简单。&lt;/p&gt;
+&lt;h2&gt;关于发布流程&lt;/h2&gt;
+&lt;p&gt;说到博客的写作流程，最初当然是最基础的 &lt;code&gt;hexo g&lt;/code&gt; &lt;code&gt;hexo d&lt;/code&gt; 发布到 Github 当然非常麻烦，后来学会了通过 Github Action 实现&lt;a href=&quot;https://juejin.cn/post/6943895271751286821&quot;&gt;自动部署&lt;/a&gt;这之后就方便了一些，开始尝试在线的编辑器，最初用过 &lt;a href=&quot;https://github.com/HexoPlusPlus/HexoPlusPlus&quot;&gt;HexoPlusPlus&lt;/a&gt; 类似于现在的 &lt;a href=&quot;https://github.com/Qexo/Qexo&quot;&gt;QEXO&lt;/a&gt; 都是在浏览器编辑文件，然后上传到 github 触发自动部署，但因为编辑器不太好使，而且不太方便，还是用 VScode 最舒服，就这样大概用了一年多。&lt;/p&gt;
+&lt;p&gt;不过，去年我开始用 Obsidian 记笔记，规划项目等等，所以就想把博客编辑放到这里，通过 &lt;a href=&quot;https://github.com/ObsidianPublisher/obsidian-github-publisher&quot;&gt;github-publisher&lt;/a&gt; 插件上传到 Github 触发 Action 实现部署&lt;/p&gt;
+&lt;h2&gt;关于域名和备案&lt;/h2&gt;
+&lt;p&gt;域名最初当然是 github 生成的&lt;a href=&quot;https://wxydejoy.github.io&quot;&gt;默认域名&lt;/a&gt; (现在这里是很久之前的 butterfly 主题博客)后来买了 &lt;code&gt;wxydejoy.top&lt;/code&gt; 并通过阿里云进行备案（备案才能使用国内 CDN）后来觉得域名太长换了 &lt;code&gt;undf.top&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;备案的话，需要三个月以上的服务器才行，当时是 27 块通过新人优惠在阿里云买了三个月，然后就是填资料等电话等等等等，繁琐但不复杂。不过服务器到期后阿里云会发邮件警告：域名未指向服务（解决方案是建个 OSS 将域名指向它然后开启访问鉴权，通过 github Action 每周访问一次，这样就可以 0 成本实现）&lt;/p&gt;
+&lt;h2&gt;关于网站加速与防御&lt;/h2&gt;
+&lt;p&gt;刚开始，博客当然是使用 github page 部署，国内基本无法访问，后来使用 &lt;a href=&quot;https://vercel.com/&quot;&gt;Vercel&lt;/a&gt; 进行部署，速度也是一般般，类似的还有 &lt;a href=&quot;https://pages.cloudflare.com/&quot;&gt;Cloudflare Page&lt;/a&gt; 国内访问速度都很感人。&lt;/p&gt;
+&lt;p&gt;现在，使用的是&lt;a href=&quot;https://www.upyun.com&quot;&gt;又拍云 CDN&lt;/a&gt; 通过加入 &lt;a href=&quot;https://www.upyun.com/league&quot;&gt;又拍云联盟&lt;/a&gt; 实现，当然你也可以使用腾讯阿里等等，但是一定要开启各种防护，防止被攻击欠费（前段时间我就被刷了一点点流量，莫名其妙）。&lt;/p&gt;
+&lt;p&gt;防御第一条：禁止国外 IP 访问 CDN，通过 DNS 将其指向源站（Github），然后就是限制各种访问频率，一般小站访问量也不会太多，每分钟能有几百次差不多了。&lt;/p&gt;
+</content:encoded></item><item><title>URDF 导出资料（ROS2）</title><link>https://undf.cn/posts/post/code/ros2/ros2_urdf/</link><guid isPermaLink="true">https://undf.cn/posts/post/code/ros2/ros2_urdf/</guid><pubDate>Mon, 21 Aug 2023 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;坐标系建立&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/image/ros2_urdf/20230821145339-2023-08-21.png&quot; alt=&quot;20230821145339-2023-08-21&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;如图所示按照DH坐标法建立各个坐标系&lt;/p&gt;
+&lt;p&gt;坐标系建立方法去复习机器人导论&lt;/p&gt;
+&lt;p&gt;建立完成可能会很乱 不用担心&lt;/p&gt;
+&lt;h2&gt;插件安装和使用&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;https://github.com/ros/solidworks_urdf_exporter&quot;&gt;插件下载地址&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;经测试 1.6.1支持 solidworks 2022 sp5（实验室当前使用的版本）&lt;/p&gt;
+&lt;p&gt;warning: 插件要在装配体里面才有反应&lt;/p&gt;
+&lt;h3&gt;插件使用&lt;/h3&gt;
+&lt;p&gt;打开插件&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/image/ros2_urdf/20230821150216-2023-08-21.png&quot; alt=&quot;20230821150216-2023-08-21&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;base_link&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/image/ros2_urdf/20230821150418-2023-08-21.png&quot; alt=&quot;20230821150418-2023-08-21&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;normal_link&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/image/ros2_urdf/20230821150631-2023-08-21.png&quot; alt=&quot;20230821150631-2023-08-21&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;其中关节类型如下&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;关节类型&lt;/th&gt;
+&lt;th&gt;描述&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;continuous&lt;/td&gt;
+&lt;td&gt;旋转关节，可以围绕单轴无限旋转&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;revolute&lt;/td&gt;
+&lt;td&gt;旋转关节，类似于continuous,.但是有旋转的角度极限  &lt;strong&gt;一定要设置上下限不然默认为0&lt;/strong&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;prismatic&lt;/td&gt;
+&lt;td&gt;滑动关节，沿某一轴线移动的关节，带有位置极限&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;plannar&lt;/td&gt;
+&lt;td&gt;平面关节，允许在平面正交方向上平移或者旋转&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;floating&lt;/td&gt;
+&lt;td&gt;浮动关节，允许进行平移、旋转运动&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;fixed&lt;/td&gt;
+&lt;td&gt;固定关节，不允许运动的特殊关节&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;设置完成后单击导出按钮&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/image/ros2_urdf/20230821151342-2023-08-21.png&quot; alt=&quot;20230821151342-2023-08-21&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/image/ros2_urdf/20230821151701-2023-08-21.png&quot; alt=&quot;20230821151701-2023-08-21&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;导出即可&lt;/p&gt;
+&lt;p&gt;注意导出名即为ros中的包名，勿乱写&lt;/p&gt;
+&lt;h2&gt;URDF 测试&lt;/h2&gt;
+&lt;p&gt;CoppeliaSim Edu 导入URDF 简单拖动旋转测试一下&lt;/p&gt;
+&lt;h2&gt;URDF 文件包修改&lt;/h2&gt;
+&lt;h3&gt;修改CMakelist.txt&lt;/h3&gt;
+&lt;p&gt;根据自己的情况修改&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;cmake_minimum_required(VERSION 3.10.2)
+project(moveit_resources_fanuc_description) # 修改为自己的包名
+find_package(ament_cmake REQUIRED)
+
+ament_package()
+
+install(DIRECTORY meshes urdf DESTINATION share/${PROJECT_NAME})
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;修改package.xml&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;&amp;lt;?xml version=&quot;1.0&quot;?&amp;gt;
+&amp;lt;package format=&quot;3&quot;&amp;gt;
+  &amp;lt;!-- # 根据内容修改 --&amp;gt;
+  &amp;lt;name&amp;gt;moveit_resources_panda_description&amp;lt;/name&amp;gt; 
+
+  &amp;lt;version&amp;gt;2.0.6&amp;lt;/version&amp;gt;
+  &amp;lt;description&amp;gt;panda Resources used for MoveIt testing&amp;lt;/description&amp;gt;
+
+  &amp;lt;author email=&quot;isucan@willowgarage.edu&quot;&amp;gt;Ioan Sucan&amp;lt;/author&amp;gt;
+  &amp;lt;author email=&quot;acorn@willowgarage.edu&quot;&amp;gt;Acorn Pooley&amp;lt;/author&amp;gt;
+
+  &amp;lt;maintainer email=&quot;dave@dav.ee&quot;&amp;gt;Dave Coleman&amp;lt;/maintainer&amp;gt;
+
+  &amp;lt;license&amp;gt;BSD&amp;lt;/license&amp;gt;
+
+  &amp;lt;buildtool_depend&amp;gt;ament_cmake&amp;lt;/buildtool_depend&amp;gt;
+
+  &amp;lt;export&amp;gt;
+      &amp;lt;build_type&amp;gt;ament_cmake&amp;lt;/build_type&amp;gt;
+  &amp;lt;/export&amp;gt;
+&amp;lt;/package&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;编译包&lt;/h3&gt;
+&lt;p&gt;将包放入 ros2 或者 moveit2 工作空间中&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;colcon build --packages-select moveit_resources_fanuc_description # 修改为自己的包名
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2&gt;MoveIt Setup Assistant 配置&lt;/h2&gt;
+&lt;pre&gt;&lt;code&gt;# 激活ros2环境
+source /opt/ros/foxy/setup.bash
+# 激活moveit环境
+source ~/moveit2_ws/install/setup.bash # 刚才编译包的路径
+# 启动moveit  MoveIt Setup Assistant
+ros2 launch moveit_setup_assistant setup_assistant.launch.py
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;剩下的就参照&lt;a href=&quot;https://moveit.picknik.ai/main/doc/examples/setup_assistant/setup_assistant_tutorial.html&quot;&gt;官网文档&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;演示&lt;/h2&gt;
+&lt;pre&gt;&lt;code&gt;# 运行演示
+ros2 launch panda_moveit_config demo.launch.py # 修改为自己的包名
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/image/ros2_urdf/%E8%BD%A8%E8%BF%B9%E8%A7%84%E5%88%92-2023-08-21.gif&quot; alt=&quot;轨迹规划-2023-08-21&quot; /&gt;&lt;/p&gt;
+&lt;h2&gt;其他&lt;/h2&gt;
+&lt;p&gt;我在导出复杂模型时遇到一些问题，可能是插件的问题，导出的模型有些问题，但是简单模型没有问题&lt;/p&gt;
+&lt;p&gt;经过CoppeliaSim Edu导入再导出，可以解决这个问题（记得修改urdf内的文件路径）&lt;/p&gt;
+</content:encoded></item><item><title>旭日x3PI的开发日常</title><link>https://undf.cn/posts/post/code/ros2/x3/%E6%97%AD%E6%97%A5x3pi%E7%9A%84%E5%BC%80%E5%8F%91%E6%97%A5%E5%B8%B8/</link><guid isPermaLink="true">https://undf.cn/posts/post/code/ros2/x3/%E6%97%AD%E6%97%A5x3pi%E7%9A%84%E5%BC%80%E5%8F%91%E6%97%A5%E5%B8%B8/</guid><pubDate>Wed, 05 Jul 2023 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;常用命令&lt;/h2&gt;
+&lt;pre&gt;&lt;code&gt;hrut_somstatus # 用于实时查询温度传感器读数及 CPU/BPU 频率实时信息
+
+
+echo performance &amp;gt; /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor  #  CPU 频率固定在最高值:
+
+sudo apt update # 更新软件源
+
+sudo apt full-upgrade # 更新系统
+
+
+sudo nmcli device wifi rescan # 扫描wifi
+
+sudo nmcli device wifi list # 列出wifi
+
+sudo wifi_connect &quot;SSID&quot; &quot;PASSWD&quot; # 连接wifi  wifi支持开热点 具体看 https://developer.horizon.ai/api/v1/fileData/documents_pi/System_Configuration/System_Configuration.html#id2
+
+
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2&gt;QT相关&lt;/h2&gt;
+&lt;p&gt;QT 安装&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;sudo apt install qt5-default
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;QT Creator 安装&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;sudo apt install qtcreator
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;第三方包&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;串口  sudo apt install libqt5serialport5-dev&lt;/li&gt;
+&lt;li&gt;蓝牙  sudo apt-get install libkf5bluezqt-dev  # 如果不行再尝试这个 sudo apt-get install libbluetooth-dev&lt;/li&gt;
+&lt;li&gt;截图  sudo apt-get install xfce4-screenshooter  # 安装后键盘上面的 prtsc 按键就可以用了&lt;/li&gt;
+&lt;li&gt;录屏  sudo apt-get install kazam # 找应用即可
+其他包类似 可以用 apt search 搜索&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;蓝牙&lt;/h2&gt;
+&lt;p&gt;蓝牙连接嵌入式设备&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;# 先配对然后连接
+sudo rfcomm connect hci0 (macaddress)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2&gt;ros&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;修复ROS2使用zsh无法用tab补全 ros2 指令的相关问题&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;sudo apt install python3-argcomplete python3-colcon-common-extensions
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;然后，在.zshrc里面添加如下语句，&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;source /usr/share/colcon_cd/function/colcon_cd.sh
+export _colcon_cd_root=/opt/ros/foxy/
+source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.zsh
+eval &quot;$(register-python-argcomplete3 ros2)&quot;
+eval &quot;$(register-python-argcomplete3 colcon)&quot;
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2&gt;后记&lt;/h2&gt;
+&lt;p&gt;看着内容不多，但在搜索引擎里面找这些废了不少功夫，所以就写了这个，方便自己也方便别人。&lt;/p&gt;
+</content:encoded></item><item><title>QtCreator 一键打包你的APP</title><link>https://undf.cn/posts/post/code/embedded/qtcreator/</link><guid isPermaLink="true">https://undf.cn/posts/post/code/embedded/qtcreator/</guid><pubDate>Mon, 03 Jul 2023 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;&amp;lt;!-- &lt;img alt=&quot;img-2023-07-03&quot; /&gt; --&amp;gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;打开这个&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/image/QtCreator/Qtcreator%E9%85%8D%E7%BD%AE-2023-07-03.png&quot; alt=&quot;Qtcreator配置-2023-07-03&quot; /&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;添加工具&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/image/QtCreator/Snipaste_2023-07-21_15-19-34-2023-07-21.png&quot; alt=&quot;Snipaste_2023-07-21_15-19-34-2023-07-21&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;添加外部程序 修改如下内容&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;执行挡： &lt;code&gt;powershell&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;参数（一行）：&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre&gt;&lt;code&gt;#  qt Creator 8 以上版本  其他版本请根据最下面的提示修改
+md %{ActiveProject:Path}/package/%{ActiveProject:BuildConfig:Type}/ ; copy  %{ActiveProject:RunConfig:Executable:FilePath}  %{ActiveProject:Path}/package/%{ActiveProject:BuildConfig:Type}/%{ActiveProject:RunConfig:Executable:FileName} ; %{ActiveProject:QT_HOST_BINS}/windeployqt.exe %{ActiveProject:Path}/package/%{ActiveProject:BuildConfig:Type}/%{ActiveProject:RunConfig:Executable:FileName} 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;ul&gt;
+&lt;li&gt;Base environment 改为 &lt;code&gt;Current build environment&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;双击可以重命名&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/image/QtCreator/20230721152236-2023-07-21.png&quot; alt=&quot;20230721152236-2023-07-21&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;其他保持默认即可&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;使用&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;(可选)将编译模式改为release&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/image/QtCreator/20230721152350-2023-07-21.png&quot; alt=&quot;20230721152350-2023-07-21&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;单击运行即可&lt;/p&gt;
+&lt;p&gt;运行后可以看到下图即为成功&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/image/QtCreator/20230721152840-2023-07-21.png&quot; alt=&quot;20230721152840-2023-07-21&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;打开项目所在目录  &lt;code&gt;package&lt;/code&gt; 文件夹即为打包后的文件夹&lt;/p&gt;
+&lt;p&gt;如果使用了Git 不要忘记把package文件夹加入到忽略列表中&lt;/p&gt;
+&lt;h2&gt;其他 qt Creator 版本&lt;/h2&gt;
+&lt;p&gt;单击红色方框后    单击右侧环境变量按钮&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/image/QtCreator/20230721153122-2023-07-21.png&quot; alt=&quot;20230721153122-2023-07-21&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;将 %{ActiveProject:Path} %{ActiveProject:RunConfig:Executable:FilePath} %{ActiveProject:RunConfig:Executable:FileName} 替换为对应的环境变量即可&lt;/p&gt;
+&lt;p&gt;如 qt Creator 4 版本的&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;#  qt Creator 4 版本
+md %{CurrentProject:Path}/package/ ; copy %{CurrentRun:Executable:FilePath} %{CurrentProject:Path}/package/%{CurrentRun:Executable:FileName} ; windeployqt %{CurrentProject:Path}/package/%{CurrentRun:Executable:FileName}
+&lt;/code&gt;&lt;/pre&gt;
+</content:encoded></item><item><title>旭日 x3PI RealSense人体关键点识别</title><link>https://undf.cn/posts/post/code/ros2/x3/%E6%97%AD%E6%97%A5-x3pi-%E4%BA%BA%E4%BD%93%E5%85%B3%E9%94%AE%E7%82%B9%E8%AF%86%E5%88%AB/</link><guid isPermaLink="true">https://undf.cn/posts/post/code/ros2/x3/%E6%97%AD%E6%97%A5-x3pi-%E4%BA%BA%E4%BD%93%E5%85%B3%E9%94%AE%E7%82%B9%E8%AF%86%E5%88%AB/</guid><pubDate>Fri, 26 May 2023 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;&amp;lt;!--&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;@Author: weiekko weiekko@gmail.com&lt;/li&gt;
+&lt;li&gt;@Date: 2023-05-26&lt;/li&gt;
+&lt;li&gt;@LastEditors: weiekko weiekko@gmail.com&lt;/li&gt;
+&lt;li&gt;@LastEditTime: 2023-05-26&lt;/li&gt;
+&lt;li&gt;@FilePath: \blog\source_posts\code\旭日 x3PI 人体关键点识别.md&lt;/li&gt;
+&lt;li&gt;@Description:&lt;/li&gt;
+&lt;li&gt;&lt;/li&gt;
+&lt;li&gt;Copyright (c) 2023 by weiekko weiekko@gmail.com, All Rights Reserved.
+--&amp;gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;起因&lt;/h2&gt;
+&lt;p&gt;简单介绍一下我的目标&lt;/p&gt;
+&lt;p&gt;获取部分人体关键点的空间坐标 控制双臂机器人进行拥抱&lt;/p&gt;
+&lt;h2&gt;首次尝试&lt;/h2&gt;
+&lt;p&gt;2022.11 开始做识别部分的内容，开始挑选硬件
+这是当时小组会的PPT
+&lt;img src=&quot;https://i.undf.cn/file/utools/1685101433236_ojwjf9ncpghqr0z3.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;X3就不用多说了 非常强大&lt;/p&gt;
+&lt;h2&gt;初次接触人体关键点识别&lt;/h2&gt;
+&lt;p&gt;刚开始是拿了一个普通的USB摄像头进行识别，但是摄像头的输出像素格式是YUYV，当时关键点识别还只能用mjpeg的USB摄像头或者MIPI的摄像头，于是乎买了官方的MIPI进行尝试&lt;/p&gt;
+&lt;p&gt;效果确实不错，但是我不光要关键点的二维坐标，还要三维坐标，这里就需要深度相机了&lt;/p&gt;
+&lt;p&gt;实验室刚好有一台Intel的深度相机435，折腾了好久，因为并不熟悉这些东西，最后也没折腾出来&lt;/p&gt;
+&lt;p&gt;仔细想想，机器人头上装俩摄像头就很奇怪，想想就脑壳痛。&lt;/p&gt;
+&lt;p&gt;当时问群里的开发人员，他们说这个相机暂时不支持，后面可能会支持。其实当时已经有codec模块了，但是好像没有文档，反正是没找到。&lt;/p&gt;
+&lt;p&gt;所以转去了用笔记本做主控，但是因为一些结构上的原因我又回来了&lt;/p&gt;
+&lt;p&gt;其实也就花了两天的时间，比我移植ALPHAPOSE快多了&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/utools/1685102218857_03dwsrnjm02gsp2w.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+&lt;h2&gt;RealSense 人体关键点识别&lt;/h2&gt;
+&lt;p&gt;先讲一下整体思路&lt;/p&gt;
+&lt;p&gt;Realsense node发布的是rgb格式的图像，使用hobot_codec把rgb转成jpeg jpeg转nv12（rgb8好像不能转nv12 我也不知道为什么 程序说的）,最后nv12送给mono2d_body_detection 就可以了&lt;/p&gt;
+&lt;h3&gt;安装realsense2 SDK&lt;/h3&gt;
+&lt;h4&gt;设置网络环境&lt;/h4&gt;
+&lt;p&gt;这里因为网络原因需要设置一下GITHUB的代理的host，不然无法访问。&lt;/p&gt;
+&lt;p&gt;打开https://www.ipaddress.com/ 输入raw.githubusercontent.com 查询IP地址 找不到就一直往下滑，直到找到&lt;/p&gt;
+&lt;p&gt;把找到的ip按这个格式保存好&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;140.82.112.3 github.com
+185.199.108.133 raw.githubusercontent.com
+185.199.109.133 raw.githubusercontent.com
+185.199.110.133 raw.githubusercontent.com
+185.199.111.133 raw.githubusercontent.com
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;编辑hosts文件&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;sudo vim /etc/hosts
+# 重启网络
+/etc/init.d/networking restart 
+
+# ping一下试试
+ping raw.githubusercontent.com
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h4&gt;添加ROS apt源&lt;/h4&gt;
+&lt;pre&gt;&lt;code&gt;sudo apt update &amp;amp;&amp;amp; sudo apt install curl gnupg2 lsb-release
+sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key  -o /usr/share/keyrings/ros-archive-keyring.gpg
+echo &quot;deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(source /etc/os-release &amp;amp;&amp;amp; echo $UBUNTU_CODENAME) main&quot; | sudo tee /etc/apt/sources.list.d/ros2.list &amp;gt; /dev/null
+
+
+sudo apt update
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h4&gt;安装Realsense  SDK&lt;/h4&gt;
+&lt;p&gt;这一步因为网络原因可能会比较漫长，耐心等待，不如起来活动活动吃个饭。&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;# 显示ROS当前版本，如果显示为空，请source /opt/tros/setup.bash
+echo $ROS_DISTRO 
+# 安装RealSense SDK
+sudo apt-get install ros-$ROS_DISTRO-librealsense2* -y 
+# 安装RealSense ros wrapper
+sudo apt-get install ros-$ROS_DISTRO-realsense2-camera -y
+sudo apt-get install ros-$ROS_DISTRO-realsense2-description -y
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h4&gt;建立软连接&lt;/h4&gt;
+&lt;pre&gt;&lt;code&gt;cd /opt/tros
+## 使用/opt/tros目录下的create_soft_link.py创建ROS package至tros.b的软连接
+sudo python3 create_soft_link.py --foxy /opt/ros/foxy/ --tros /opt/tros/
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;到这里Realsense2 SDK就安装完成了&lt;/p&gt;
+&lt;h4&gt;运行测试&lt;/h4&gt;
+&lt;p&gt;运行前要先：&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;source /opt/ros/foxy/setup.bash&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;然后：&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;source /opt/tros/setup.bash &lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;运行程序：&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;ros2 launch realsense2_camera rs_launch.py depth_module.profile:=640x480x15 &lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;这里要感谢一下王卓大佬&lt;/p&gt;
+&lt;h3&gt;运行&lt;/h3&gt;
+&lt;p&gt;这里我写了个脚本，保存为.sh文件，然后运行就好了，当然你也可以一步步运行看看哪里出错了&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;echo &apos;设置ros2环境变量&apos;
+source /opt/ros/foxy/setup.bash
+source /opt/tros/setup.bash
+
+sleep 5
+echo &apos;启动ros2  realsense 节点&apos;
+
+ros2 launch realsense2_camera rs_launch.py depth_module.profile:=640x480x15 &amp;amp;
+
+sleep 5
+echo &apos;启动ros2  rgb8 2 jpeg 节点&apos;
+ros2 run hobot_codec hobot_codec_republish --ros-args -p channel:=0 -p in_mode:=ros -p in_format:=rgb8 -p out_mode:=ros -p out_format:=jpeg -p sub_topic:=/camera/color/image_raw -p  pub_topic:=/image_jpeg --log-level error &amp;amp;
+sleep 5
+echo &apos;启动ros2  jpeg 2 nv12 节点&apos;
+ros2 run hobot_codec hobot_codec_republish --ros-args -p channel:=1 -p in_mode:=ros -p in_format:=jpeg -p out_mode:=shared_mem -p out_format:=nv12 -p sub_topic:=/image_jpeg -p  pub_topic:=/hbmem_img --log-level error &amp;amp;
+sleep 5
+echo &apos;启动ros2  websocket 节点&apos;
+ros2 run websocket websocket --ros-args -p image_topic:=/image_jpeg -p image_type:=mjpeg -p smart_topic:=/hobot_mono2d_body_detection --log-level error  &amp;amp;
+sleep 5
+echo &apos;启动ros2  mono2d_body_detection 节点&apos;
+ros2 run mono2d_body_detection mono2d_body_detection --log-level error &amp;amp;
+sleep 5
+echo &apos;启动ros2  websocket 节点&apos;
+ros2 launch websocket hobot_websocket.launch.py &amp;amp;
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;需要注意的是  rgb8(ros) -&amp;gt; jpeg(ros) -&amp;gt; nv12(shared_mem) -&amp;gt; mono2d_body_detection&lt;/p&gt;
+&lt;h3&gt;参考链接&lt;/h3&gt;
+&lt;p&gt;安装realsense SDK参考：https://c-gitlab.horizon.ai/HHP/box/hobot_slam/orb_slam3&lt;/p&gt;
+&lt;p&gt;软链接参考：https://developer.horizon.ai/api/v1/fileData/TogetherROS/quick_start/install_use_ros_pkg.html&lt;/p&gt;
+&lt;p&gt;codec参考：https://c-gitlab.horizon.ai/HHP/box/hobot_codec&lt;/p&gt;
+&lt;h2&gt;注&lt;/h2&gt;
+&lt;p&gt;如果有哪里有问题，包括我的问题和你运行的问题，欢迎评论指出，我会及时修改&lt;/p&gt;
+&lt;p&gt;这里还要感谢一下王卓大佬&lt;/p&gt;
+&lt;p&gt;关于realsense 的文档藏的也太深了。。。&lt;/p&gt;
+&lt;h2&gt;To Do&lt;/h2&gt;
+&lt;p&gt;深度信息获取与计算
+表情视频切换播放&lt;/p&gt;
+</content:encoded></item><item><title>MoneyProgress_win</title><link>https://undf.cn/posts/post/code/cpp/moneyprogress_win/</link><guid isPermaLink="true">https://undf.cn/posts/post/code/cpp/moneyprogress_win/</guid><pubDate>Tue, 11 Apr 2023 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;起因&lt;/h2&gt;
+&lt;p&gt;前段时间分享了一个MoneyProgress的Mac软件,一直有人在论坛发帖问有没有win版的,恰好最近在看Qt,于是就有了这个项目.&lt;/p&gt;
+&lt;p&gt;写这个贴子的目的是为了记录一下开发过程,以及遇到的问题.&lt;/p&gt;
+&lt;p&gt;以后可以拿它做参考,也可以给有需要的人提供一些帮助.&lt;/p&gt;
+&lt;p&gt;MAC版的项目地址: &lt;a href=&quot;https://github.com/Lakr233/MoneyProgress&quot;&gt;MoneyProgress&lt;/a&gt;
+WIN版的项目地址: &lt;a href=&quot;https://github.com/wxydejoy/MoneyProgress_win&quot;&gt;MoneyProgress_win&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;程序很大程度参考了原作者的UI设计,这里再次感谢原作者.&lt;/p&gt;
+&lt;h2&gt;开发环境&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Windows 10 20H2(这个不是很重要)&lt;/li&gt;
+&lt;li&gt;Qt 5.15 with Mingw(这个很重要)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;开发过程&lt;/h2&gt;
+&lt;p&gt;这块看我的&lt;a href=&quot;https://github.com/wxydejoy/MoneyProgress_win/commits/main&quot;&gt;commit&lt;/a&gt;记录就行了,虽然有点乱,但是基本上都是有用的.&lt;/p&gt;
+&lt;p&gt;这里只记录一些比较重要的问题,其他的问题可以参考&lt;a href=&quot;https://doc.qt.io/qt-5/index.html&quot;&gt;Qt官方文档&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;多看文档,多看文档,多看文档.&lt;/p&gt;
+&lt;h3&gt;问题1: 图片过大&lt;/h3&gt;
+&lt;p&gt;原作者的图片都是png格式,大小足足有3.27MB,分辨率为1024x1024,应该是自己画的吧.&lt;/p&gt;
+&lt;p&gt;刚开始导入图片设置为&lt;code&gt;label&lt;/code&gt;设置样式表&lt;code&gt;background-image: url(:/img/avatar.png);&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;是这样的:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/image/MoneyProgress_win/20230411122233-2023-04-11.png&quot; alt=&quot;20230411122233-2023-04-11&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;可以看到图片很大,很奇怪,&lt;/p&gt;
+&lt;p&gt;解决办法:&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;设置为&lt;code&gt;border-image: url(:/img/avatar.png);&lt;/code&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/image/MoneyProgress_win/20230411122553-2023-04-11.png&quot; alt=&quot;20230411122553-2023-04-11&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;这样它就会自动缩放了.可以通过设置&lt;code&gt;label&lt;/code&gt;的&lt;code&gt;width&lt;/code&gt;和&lt;code&gt;height&lt;/code&gt;来控制图片的大小.&lt;/p&gt;
+&lt;h3&gt;问题2: 无法获取到正确的屏幕分辨率&lt;/h3&gt;
+&lt;p&gt;这个问题是论坛上有人提出来的,我也遇到了.&lt;/p&gt;
+&lt;p&gt;原代码为:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;// 这里省略了一些代码
+// 获取屏幕分辨率高度
+QApplication::desktop()-&amp;gt;width();
+
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;实际获取的不一定就是当前屏幕的分辨率,有时候会获取到错误的值.
+比如你有多块屏幕,它会获取到所有屏幕的分辨率的和.就很离谱.
+这就会导致我们的程序在不同的屏幕上显示的效果不一样.
+任务栏的弹窗就奇奇怪怪的.甚至看不到.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/image/MoneyProgress_win/20230411123559-2023-04-11.png&quot; alt=&quot;20230411123559-2023-04-11&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;解决办法:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;// 这里省略了一些代码
+QApplication::screenAt(QCursor().pos())-&amp;gt;geometry().width()
+
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;意为获取鼠标所在屏幕的分辨率宽度.非常ok.&lt;/p&gt;
+&lt;h3&gt;问题3: 文本无法正常更新&lt;/h3&gt;
+&lt;p&gt;问题代码:&lt;/p&gt;
+&lt;p&gt;因为我想实现每次点击任务栏图标都会弹出一个弹窗,显示当前的挣钱进度,所以我在&lt;code&gt;MoneyProgress&lt;/code&gt;类中添加了一个&lt;code&gt;IconMessage&lt;/code&gt;类的对象(一个小widget),并且在&lt;code&gt;MoneyProgress&lt;/code&gt;类中添加了一个&lt;code&gt;update&lt;/code&gt;函数,用来更新弹窗中的文本.
+同时&lt;code&gt;update&lt;/code&gt;还要负责更新主窗口中的文本.所以就有了如下代码&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;
+void MoneyProgress::update()
+{
+    // 这里省略了一些代码
+    // 判断两个界面是否可见
+    if (this-&amp;gt;isVisible())
+    {
+        ui-&amp;gt;labelMoneyNow-&amp;gt;setText(&quot;您当前已经挣了&quot;+QString::number(moneyday*progress/1000,&apos;f&apos;,1)+&quot;元;&quot;);
+        ui-&amp;gt;labelDay-&amp;gt;setText(&quot;您一月工作&quot; + QString::number(days) + &quot;天;&quot;);
+        ui-&amp;gt;labelMoneyDay-&amp;gt;setText(&quot;您一天能挣&quot; + QString::number(moneyday, &apos;f&apos;, 1) + &quot;元;&quot;);
+        ui-&amp;gt;labelHourDay-&amp;gt;setText(&quot;您一天工作&quot; + QString::number(hours, &apos;f&apos;, 1) + &quot;小时;&quot;);
+        ui-&amp;gt;labelMoneySecond-&amp;gt;setText(&quot;您一秒钟能挣&quot; + QString::number(moneysecond, &apos;f&apos;, 6) + &quot;元;&quot;);
+    }
+    if (iconmessage.isVisible())
+    {
+        iconmessage.update(progress, moneyday);
+        qDebug() &amp;lt;&amp;lt; progress;
+    }
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;可以看到大致思路就是判断两个界面是否可见,如果可见就更新文本.但是任务栏那个小窗口的文本无法更新,调试发现了一个低级错误&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;
+update(); //错误的写法
+iconmessage.show();
+// update(); 把update()放在这里就可以更新了
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;确实很低级&lt;/p&gt;
+&lt;h3&gt;问题4: QSettings 无效&lt;/h3&gt;
+&lt;p&gt;这个问题是在保存时间的时候遇到的,我想把设置保存到&lt;code&gt;QSettings&lt;/code&gt;里面,但是发现无论怎么设置都无效.
+在网上逛了半天,发现是因为&lt;code&gt;QSettings&lt;/code&gt;只能在构造函数和析构函数中使用,不能在其他函数中使用.&lt;/p&gt;
+&lt;p&gt;问题代码:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;//原本设计的是每次设置改变就保存一次,但是发现无效
+void MoneyProgress::on_timeSleepdown_userTimeChanged(const QTime &amp;amp;time)
+{
+    // 这里省略了一些代码 settings 是一个QSettings对象,在.h文件中定义
+    settings.setValue(&quot;sleepDown&quot;, sleepDown);
+    
+    // 保存设置
+
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;解决办法:&lt;/p&gt;
+&lt;p&gt;将&lt;code&gt;QSettings&lt;/code&gt;的保存设置放到析构函数中,这样就可以正常使用了.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;
+
+MoneyProgress::~MoneyProgress()
+{
+    QSettings settings(&quot;MuYin&quot;, &quot;MoneyProgress_win&quot;);
+    // 保存设置
+    settings.setValue(&quot;money&quot;, money);
+    settings.setValue(&quot;days&quot;, days);
+    settings.setValue(&quot;workUp&quot;, workUp);
+    settings.setValue(&quot;workDown&quot;, workDown);
+    settings.setValue(&quot;sleepUp&quot;, sleepUp);
+    settings.setValue(&quot;sleepDown&quot;, sleepDown);
+    // settings.setValue(&quot;geometry&quot;, this-&amp;gt;saveGeometry());
+    // settings.setValue(&quot;windowState&quot;, this-&amp;gt;saveState());
+
+    // 保存设置
+    settings.sync();
+
+    delete ui;
+}
+
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;问题5: QSS样式表不会用&lt;/h3&gt;
+&lt;p&gt;因为我设置了标题栏隐藏&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;this-&amp;gt;setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint); // 隐藏标题栏&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;所以一直弄不出来&lt;code&gt;borde&lt;/code&gt;的样式,最后发现改&lt;code&gt;centralwidget&lt;/code&gt;的&lt;code&gt;border&lt;/code&gt;属性就可以了.&lt;/p&gt;
+&lt;p&gt;问题代码:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;QWidget {
+    background-color: rgb(255, 255, 255);
+    border-width: 3px;
+    border-color: rgba(255, 216, 58, 225);
+    border-radius: 15px;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;解决方法&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;QWidget {
+    background-color: rgb(255, 255, 255);
+    border-color: rgba(255, 216, 58, 225);
+    border-radius: 15px;
+}
+QWidget#centralwidget {
+    background-color: rgb(255, 255, 255);
+    border: 3px solid #ffee6f;
+    /* border-color: rgba(255, 216, 58, 225); */
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;css还是不太了解,回头需要好好学习一下.&lt;/p&gt;
+&lt;h3&gt;问题6: 程序整体缩放问题&lt;/h3&gt;
+&lt;p&gt;引用网友的话:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Qt下高分屏的问题，几乎是一场灾难。希望未来 Qt 能有更好的解决方案。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;解决方法: 添加 &lt;code&gt;qt/etc/qt.conf&lt;/code&gt;文件,注意这是在qrc文件中的路径,它的完整路径是&lt;code&gt;qrc:/qt/etc/qt.conf&lt;/code&gt;,网上说一定不要弄错
+文件内容的意思为不使用QT的缩放功能,而是使用系统的缩放功能&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;[Platforms]
+WindowsArguments = dpiawareness=0
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;具体看这个&lt;a href=&quot;https://github.com/wxydejoy/MoneyProgress_win/commit/76ce3656f6f45008369d1b023bd450f817b59ab3&quot;&gt;commit&lt;/a&gt;&lt;/p&gt;
+&lt;h3&gt;问题7: QtCreator 无法Debug&lt;/h3&gt;
+&lt;p&gt;将build模式从release改为debug就可以了..................................&lt;/p&gt;
+&lt;h2&gt;总结&lt;/h2&gt;
+&lt;p&gt;项目不大,时间也不算长,大概两三个晚上的样子,但是在这个过程中学到了很多东西,比如说&lt;code&gt;QSettings&lt;/code&gt;的使用,&lt;code&gt;QSS&lt;/code&gt;的使用,&lt;code&gt;QTimer&lt;/code&gt;的使用,&lt;code&gt;QApplication::screenAt(QCursor().pos())-&amp;gt;geometry().width()&lt;/code&gt;的使用,以及一些小技巧,比如说&lt;code&gt;QSettings&lt;/code&gt;只能在构造函数和析构函数中使用,&lt;code&gt;QSS&lt;/code&gt;的&lt;code&gt;border&lt;/code&gt;属性要写在&lt;code&gt;centralwidget&lt;/code&gt;上,&lt;code&gt;QTimer&lt;/code&gt;的&lt;code&gt;start&lt;/code&gt;函数可以传入一个参数,表示延迟多久开始计时,&lt;code&gt;QApplication::screenAt(QCursor().pos())-&amp;gt;geometry().width()&lt;/code&gt;可以获取鼠标所在屏幕的分辨率宽度等等.&lt;/p&gt;
+&lt;p&gt;最后希望大家能够多多支持,如果有什么问题,欢迎指正,可以在评论区留言,我会尽快回复的.&lt;/p&gt;
+</content:encoded></item><item><title>戴森球计划[游戏安利]</title><link>https://undf.cn/posts/post/life/%E6%88%B4%E6%A3%AE%E7%90%83%E8%AE%A1%E5%88%92/</link><guid isPermaLink="true">https://undf.cn/posts/post/life/%E6%88%B4%E6%A3%AE%E7%90%83%E8%AE%A1%E5%88%92/</guid><pubDate>Wed, 11 Jan 2023 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;游戏介绍&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;探索未知的星球，发现珍奇，让你的足迹遍布星辰大海。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;《戴森球计划》是一款融合了太空、自动化工厂、冒险、探索等元素的科幻题材沙盒建造类游戏。在未来，人类踏入高级文明的行列之时，科技的强大带来了飞速的发展，虚拟现实迭代了空间与时间。人类创造了超级计算机——“主脑”，以期待利用其强大的计算能力来进一步扩大虚拟世界的运用。&lt;/p&gt;
+&lt;p&gt;作为玩家的你，加入了空间管理联盟COSMO开启的一项代号为“戴森球计划”的工程项目，建造戴森球，为“主脑”提供持续稳定的能量。
+在游戏中，玩家将从上帝视角进行工厂建造及资源管理。在这一过程中，你势必会遭遇诸多困难，毕竟宇宙之大，什么都可能发生。然而，你的创造力与想象力将会助你达成这一宏大的目标，整个银河势必将在你的规划下成为人类文明前进的基石。&lt;/p&gt;
+&lt;p&gt;你可以不断解锁科技，一步一步打造专属你的戴森球；
+也可以探索宇宙，发现宇宙珍奇，踏遍星辰大海；
+或是架设星际物流系统，串联出庞大的工业帝国；
+亦或是不断优化设计，让生产流水线的效率更高。&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;随机生成的星图，每一局都是独一无二的宇宙。&lt;/em&gt;
+&lt;em&gt;更加微观的建造戴森球，从一个零件开始构架。&lt;/em&gt;
+&lt;em&gt;千变万化的宇宙生态，中子星、白矮星、红巨星，甚至黑洞。&lt;/em&gt;
+&lt;em&gt;不止于地表的自动化生产流水线，跨越星系运输物资。&lt;/em&gt;
+&lt;em&gt;多种可自主定制的设定，打造属于你自己的戴森球计划。&lt;/em&gt;
+&lt;em&gt;球形地表，完美表现在一颗星球之上完成建设的特色。&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;将资源通过传送带串联在各个建筑之间，形成高效的流水线生产，让科技自主的前进。同时在建造过程中建筑会自动吸附网格，铺设流水线时可以利用建筑网格吸附功能自动对齐建筑，大大提高建造的效率，形成大规模的自动化流水线。&lt;/p&gt;
+&lt;p&gt;跨越地表运输的限制，组建你的星际运输大队，将另一个星球的物资传递过来，集合全宇宙的力量来快速发展自己。&lt;/p&gt;
+&lt;p&gt;每一次游戏的开始都会随机生成全新的星图，拥有不同的星球种类，矿物分布。每一个星球的地形也会变化。在这个千变万化的宇宙中去完全属于你自己的“戴森球计划”。&lt;/p&gt;
+&lt;p&gt;同时游戏中直接展现了各式各样的星球和天象，中子星、白矮星、红巨星、气态星球、日冕、永昼永夜等，统统都可以在这里看到。&lt;/p&gt;
+&lt;h2&gt;宣传视频&lt;/h2&gt;
+&lt;p&gt;&amp;lt;iframe src=&quot;//player.bilibili.com/player.html?aid=713920122&amp;amp;bvid=BV1uX4y1N7RA&amp;amp;cid=289044568&amp;amp;page=1&quot; scrolling=&quot;no&quot; border=&quot;0&quot; frameborder=&quot;no&quot; framespacing=&quot;0&quot; allowfullscreen=&quot;true&quot;&amp;gt; &amp;lt;/iframe&amp;gt;&lt;/p&gt;
+&lt;h2&gt;买家秀&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/utools/uTools_1673411927627_Px_qcq6ltpy60u8gd2l.png&quot; alt=&quot;&quot; /&gt;
+&lt;img src=&quot;https://i.undf.cn/file/utools/uTools_1673411846852_Px_ixatoh29oz8dv61y.png&quot; alt=&quot;&quot; /&gt;
+&lt;img src=&quot;https://i.undf.cn/file/utools/uTools_1673411772808_Px(1)_ghq9uh55ib64biwb.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+&lt;h2&gt;一些有趣但很真实的评论&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;早上八点打开游戏，关闭游戏是已经是早上七点，这游戏能让时间倒流！！！&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;配置要求不高，但是后期PPT是无法避免的&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;戴森球计划（❌）    时间消失模拟器（✔️）&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;千人大厂十连抽，五人作坊戴森球！&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;70块钱他就能给你几十个恒星系玩哎，当你看到戴森球代替恒星升起，物流飞船遍布整个宇宙，自动化生产线源源不断生产出一些看上去非常厉害的东西的时候，那感觉，真的绝了&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2&gt;还没出的战斗序列&lt;/h2&gt;
+&lt;p&gt;《戴森球计划》TGS战斗系统宣传视频：黑雾崛起&lt;/p&gt;
+&lt;p&gt;&amp;lt;iframe style=&quot;height: 30rem;width: 100%;&quot; src=&quot;//player.bilibili.com/player.html?aid=645605352&amp;amp;bvid=BV1nY4y1T7vo&amp;amp;cid=832676244&amp;amp;page=1&quot; scrolling=&quot;no&quot; border=&quot;0&quot; frameborder=&quot;no&quot; framespacing=&quot;0&quot; allowfullscreen=&quot;true&quot; &amp;gt; &amp;lt;/iframe&amp;gt;&lt;/p&gt;
+&lt;h2&gt;玩家文档&lt;/h2&gt;
+&lt;p&gt;https://wiki.biligame.com/dsp/%E9%A6%96%E9%A1%B5&lt;/p&gt;
+&lt;p&gt;最后测试一下我的随机图片壁纸&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/random&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+</content:encoded></item><item><title>invoice_ocr</title><link>https://undf.cn/posts/post/code/py/invoice_ocr/</link><guid isPermaLink="true">https://undf.cn/posts/post/code/py/invoice_ocr/</guid><pubDate>Sat, 01 Oct 2022 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;因&lt;/h2&gt;
+&lt;p&gt;最近实验室财务政策(报销的相关事情)有一些改变，需要自己去写入库单，然后去财务处报销，但是我不想手写Word，然后就有了这个工具。&lt;/p&gt;
+&lt;p&gt;之前财务也有用过一个OCR的工具，但是我觉得不太好用，所以就干脆自己写了一个。&lt;/p&gt;
+&lt;p&gt;在提高效率的同时，也可以学习一下OCR的相关知识。&lt;/p&gt;
+&lt;h2&gt;用到的库&lt;/h2&gt;
+&lt;p&gt;语言当然不用说了，Python。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;ocr(文字识别)：百度的OCR api &lt;a href=&quot;https://ai.baidu.com/tech/ocr_receipts/vat_invoice&quot;&gt;增值税发票识别&lt;/a&gt;（封面也是这里找的）&lt;/li&gt;
+&lt;li&gt;json：用来解析百度OCR的返回值&lt;/li&gt;
+&lt;li&gt;python-docx：用来生成Word文档&lt;/li&gt;
+&lt;li&gt;pypdf2：用来生成PDF文档&lt;/li&gt;
+&lt;li&gt;datetime：用来生成时间戳&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;思路&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;从淘宝等网站获取订单发票&lt;/li&gt;
+&lt;li&gt;用百度OCR识别发票信息&lt;/li&gt;
+&lt;li&gt;生成Word文档&lt;/li&gt;
+&lt;li&gt;将发票pdf重命名并归档&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2&gt;效果&lt;/h2&gt;
+&lt;p&gt;部分效果图如下：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/cundf/others/invoice_ocr.md/2022-10-01-17-16-47.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/cundf/others/invoice_ocr.md/2022-10-01-17-17-30.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+&lt;h2&gt;代码&lt;/h2&gt;
+&lt;p&gt;很长且没有注释，但是我觉得很好理解，就不贴了。&lt;/p&gt;
+&lt;p&gt;其实自己也快忘了hhhh&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;
+from datetime import datetime
+import shutil
+from time import sleep
+from aip import AipOcr
+import PyPDF2 as pdf
+import json
+import docx
+import os
+
+&quot;&quot;&quot; 你的 APPID AK SK &quot;&quot;&quot;
+APP_ID = &apos;xxxx&apos;
+API_KEY = &apos;xxx&apos;
+SECRET_KEY = &apos;xxxx&apos;
+
+client = AipOcr(APP_ID, API_KEY, SECRET_KEY)
+
+
+&quot;&quot;&quot; 读取pdf &quot;&quot;&quot;
+
+
+def get_file_content(filePath):
+    with open(filePath, &apos;rb&apos;) as fp:
+        return fp.read()
+
+
+# 遍历文件夹下所有pdf文件
+def get_pdffiles(dir_path):
+    import os
+    files = os.listdir(dir_path)
+    pdf_files = []
+    for file in files:
+        if file.endswith(&apos;.pdf&apos;):
+            pdf_files.append(dir_path+&apos;/&apos;+file)
+    return pdf_files
+
+
+# 商品类
+class Commodity:
+    def __init__(self):
+        self.name = &apos;&apos;
+        self.type = &apos;&apos;
+        self.unit = &apos;&apos;
+        self.price = 0
+        self.tax_rate = 0
+        self.tax = 0
+        self.total_price = 0
+        self.num = 0
+
+    
+
+# 入库单类
+
+
+# 入库单
+# Warehouse receipt
+
+class WarehouseReceipt():
+    def __init__(self, pdf_file_path=&apos;&apos;):
+        self.order_num = &apos;&apos;
+        self.order_date = &apos;&apos;
+        self.supplier = &apos;&apos;
+        self.commodity_list = []
+        self.total_price = 0
+        self.json = &apos;&apos;
+        self.pdf_file_path = pdf_file_path
+        self.company = &apos;&apos;
+        self.c_price = &apos;&apos;
+
+    def __str__(self):
+        return &apos;订单号：&apos;+self.order_num+&apos;，订单日期：&apos;+self.order_date+&apos;，供应商：&apos;+self.supplier+&apos;，总价：&apos;+self.total_price
+
+    
+    def ocr(self):
+        # pdf_file_path = &apos;invoice/1.pdf&apos;
+
+
+
+        if self.get_pdf_num() &amp;gt; 1:
+            #print(&apos;pdf文件页数大于1,暂不支持&apos;)
+            return
+        else:
+            #print(&apos;pdf文件页数为1&apos;)
+            #print(&apos;开始识别&apos;)
+            #print(self.pdf_file_path)
+            pdf_file = self.get_file_content()
+            self.json = client.vatInvoicePdf(pdf_file)
+            # with open(&apos;{}.json&apos;.format(self.pdf_file_path), &apos;w&apos;, encoding=&apos;utf-8&apos;) as f:
+            #     json.dump(self.json, f, ensure_ascii=False, indent=4)
+
+            #print(self.json)
+
+
+    def ocr_pic(self):
+        # pdf 转图片
+        def pdf_to_pic(self):
+            from pdf2image import convert_from_path
+            pages = convert_from_path(self.pdf_file_path, 200)
+            for page in pages:
+                page.save(self.pdf_file_path.replace(&apos;.pdf&apos;,&apos;.jpg&apos;), &apos;JPEG&apos;)
+        pdf_to_pic(self)
+        # 识别图片
+        image = self.get_pic_content()
+        
+        self.json = client.receipt(image)
+        # 保存json数据
+        with open(&apos;invoice/{}.json&apos;.format(self.pdf_file_path), &apos;w&apos;, encoding=&apos;utf-8&apos;) as f:
+            json.dump(self.json, f, ensure_ascii=False, indent=4)
+        #print(self.json)
+
+
+    def handle_json(self):
+
+        json_data = self.json
+        # 商品对象列表
+        self.commodity_list = []
+
+        words_result = json_data[&apos;words_result&apos;]
+        for i in range(0, len(words_result[&apos;CommodityTaxRate&apos;])):
+
+            # 商品名称
+            self.commodity_list.append(Commodity())
+            if i == len(words_result[&apos;CommodityTaxRate&apos;])-1:
+                for j in range(int(words_result[&apos;CommodityTaxRate&apos;][i][&apos;row&apos;])-1, len(words_result[&apos;CommodityName&apos;])):
+                    #print(i, j)
+                    self.commodity_list[i].name += words_result[&apos;CommodityName&apos;][j][&apos;word&apos;]
+                    # self.commodity_list[i]+=(words_result[&apos;CommodityName&apos;][j][&apos;word&apos;])
+            else:
+                for j in range(int(words_result[&apos;CommodityTaxRate&apos;][i][&apos;row&apos;])-1, int(words_result[&apos;CommodityTaxRate&apos;][i+1][&apos;row&apos;])-1):
+                    #print(i, j)
+                    self.commodity_list[i].name += words_result[&apos;CommodityName&apos;][j][&apos;word&apos;]
+                    # self.commodity_list[i]+=(words_result[&apos;CommodityName&apos;][j][&apos;word&apos;])
+
+            # 商品单价(含税)
+            # 判断是否含税
+            if &apos;%&apos; in words_result[&apos;CommodityTaxRate&apos;][i][&apos;word&apos;]:
+                #print(&apos;含税&apos;,i)
+                #print(&apos;ll&apos;,self.commodity_list)
+                
+                #print(&apos;ll&apos;,self.commodity_list[i])
+
+                self.commodity_list[i].price = float(
+                    words_result[&apos;CommodityPrice&apos;][i][&apos;word&apos;]) + float(words_result[&apos;CommodityTax&apos;][i][&apos;word&apos;]) / int(words_result[&apos;CommodityNum&apos;][i][&apos;word&apos;])
+                #print(&apos;%&apos;)
+            else:
+                self.commodity_list[i].price = float(
+                    words_result[&apos;CommodityPrice&apos;][i][&apos;word&apos;])
+
+            # 商品类型(只能单页)
+            if words_result[&apos;CommodityType&apos;]:
+                self.commodity_list[i].type = words_result[&apos;CommodityType&apos;][i][&apos;word&apos;]
+
+            #self.commodity_list[i].price = words_result[&apos;CommodityPrice&apos;][i][&apos;word&apos;]
+
+            # 单个商品总价
+            self.commodity_list[i].total_price = self.commodity_list[i].price * \
+                int(words_result[&apos;CommodityNum&apos;][i][&apos;word&apos;])
+
+            # 处理单价和总价的小数点
+            self.commodity_list[i].price = round(
+                self.commodity_list[i].price, 2)
+            self.commodity_list[i].total_price = round(
+                self.commodity_list[i].total_price, 2)
+
+            self.commodity_list[i].num = int(
+                words_result[&apos;CommodityNum&apos;][i][&apos;word&apos;])
+
+            # 商品单位
+            self.commodity_list[i].unit = words_result[&apos;CommodityUnit&apos;][i][&apos;word&apos;]
+
+            
+        self.total_price = float(words_result[&apos;AmountInFiguers&apos;])
+        self.order_date = words_result[&apos;InvoiceDate&apos;]
+        self.company = words_result[&apos;SellerName&apos;]
+        self.c_price = words_result[&apos;AmountInWords&apos;]
+            
+
+
+        
+
+            
+            
+
+            # 商品名称
+
+        #print(self.commodity_list)
+        for i in self.commodity_list:
+            #print(i.name)
+            #print(i.price)
+            #print(i.total_price)
+            #print(i.num)
+            #print(i.type)
+            #print(i.unit)
+            pass
+
+    # 生成入库单word文件
+
+    def generate_word(self):
+        from docx.shared import Pt
+        from docx.oxml.ns import qn
+        from docx.shared import Inches
+        
+        from docx.enum.text import WD_ALIGN_PARAGRAPH
+        import datetime
+        from docx.enum.table import WD_TABLE_ALIGNMENT
+        from docx.enum.table import WD_ALIGN_VERTICAL
+        from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+
+
+        # 生成word文件
+        doc = docx.Document()
+        # 设置所有字体为宋体
+        doc.styles[&apos;Normal&apos;].font.name = u&apos;宋体&apos;
+
+
+        doc.styles[&apos;Normal&apos;]._element.rPr.rFonts.set(qn(&apos;w:eastAsia&apos;), u&apos;宋体&apos;)
+        # 设置所有段落的行距为1.5倍
+        doc.styles[&apos;Normal&apos;].paragraph_format.line_spacing = 1.5
+        # 设置
+        title = doc.add_paragraph(&quot;浙江工业大学耗材入库单&quot;, style=&apos;Normal&apos;)
+        # 设置标题字体大小
+        title.runs[0].font.size = Pt(18)
+        # 加粗
+        title.runs[0].font.bold = True
+        # 设置标题居中
+        title.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        # 添加当天时间
+        today = datetime.datetime.now().strftime(&apos;%Y年%m月%d日&apos;)
+        today = doc.add_paragraph(today, style=&apos;Normal&apos;)
+        today.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        # 添加部门公章
+        doc.add_paragraph(&quot;部门（公章）：							单位：	元&quot;, style=&apos;Normal&apos;)
+
+
+
+
+        # 设置表格
+        table = doc.add_table(rows=1, cols=7, style=&apos;Table Grid&apos;)
+        # 左下
+        table.alignment = WD_ALIGN_VERTICAL.CENTER
+        # table.alignment = 
+        # table.alignment = WD_TABLE_ALIGNMENT.LEFT
+        # table.alignment = WD_TABLE_ALIGNMENT.BOTTOM
+
+        # 根据内容自动调整列宽
+        # table.autofit = True
+        # table.autofitcontent = True
+        # 设置每一列的宽度
+        table.cell(0, 1).width = Inches(4)
+        table.cell(0, 2).width = Inches(3)
+        
+
+        # 设置 首行
+        table.cell(0, 0).text = &apos;供货单位&apos;
+        table.cell(0, 1).text = self.company
+        table.cell(0, 2).text = &apos;入库日期&apos;
+        table.cell(0, 3).text = self.order_date
+        # 合并单元格
+        table.cell(0, 3).merge(table.cell(0, 4))
+        table.cell(0, 5).text = &apos;入库单号&apos;
+        table.cell(0, 6).text = self.order_num
+        
+        # 表格 根据内容自动调整
+        table.allow_autofit = True
+
+
+        hdr_cells = table.add_row().cells
+        hdr_cells[0].text = &apos;序号&apos;
+        hdr_cells[1].text = &apos;耗材名称&apos;
+        hdr_cells[2].text = &apos;规格型号&apos;
+        hdr_cells[3].text = &apos;单位&apos;
+        hdr_cells[4].text = &apos;数量&apos;
+        hdr_cells[5].text = &apos;单价&apos;
+        hdr_cells[6].text = &apos;金额&apos;
+        for index,i in enumerate(self.commodity_list):
+            row_cells = table.add_row().cells
+            row_cells[0].text = str(index+1)
+            row_cells[1].text = i.name
+            row_cells[2].text = i.type
+            row_cells[3].text = i.unit
+            row_cells[4].text = str(i.num)
+            row_cells[5].text = str(i.price)
+            row_cells[6].text = str(i.total_price)
+        
+        # 合计行
+        row_cells = table.add_row().cells
+        row_cells[0].text = &apos;合计&apos;
+        # 合并单元格
+        
+        row_cells[1].text = &apos;(大写)&apos;
+        row_cells[2].merge(row_cells[3]).merge(row_cells[4]).text = self.c_price
+        row_cells[5].text = &apos;(小写)&apos;
+        row_cells[6].text = str(self.total_price)
+
+        
+
+        # 添加制表等
+        doc.add_paragraph(&quot;制表（保管）：			采购：			入库验收：&quot;, style=&apos;Normal&apos;)
+
+        last = doc.add_paragraph(
+            &quot;第一联：存根联	第二联：财务	第三联：供货单位（采购）	第四联：验收人&quot;, style=&apos;Normal&apos;)
+        last.runs[0].font.size = Pt(10)
+        last.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        
+
+        # 保存文件
+
+        doc.save(&apos;invoice/word/&apos;+str(self.total_price)+self.company+self.order_date+&apos;.docx&apos;)
+    
+
+    def get_file_content(self):
+        with open(self.pdf_file_path, &apos;rb&apos;) as fp:
+            return fp.read()
+
+    def get_pic_content(self):
+        with open(self.pdf_file_path.replace(&apos;.pdf&apos;,&apos;.jpg&apos;), &apos;rb&apos;) as fp:
+            return fp.read()
+
+    # 获取pdf页码
+
+    def get_pdf_num(self):
+        pdfFileObj = open(self.pdf_file_path, &apos;rb&apos;)
+        pdfReader = pdf.PdfFileReader(pdfFileObj)
+        num = pdfReader.numPages
+        return num
+
+    def cp(self):
+        # 复制并重命名pdf文件
+        shutil.copy(self.pdf_file_path, &apos;invoice/pdf/&apos;+str(self.total_price)+self.company+self.order_date+&apos;.pdf&apos;)
+        # 删除原pdf文件
+        os.remove(self.pdf_file_path)
+
+    def deal(self):
+        self.ocr()
+        # 捕捉异常
+        try:
+            self.handle_json()
+        except Exception as e:
+            print(e, &apos;json文件处理失败&apos;)
+            # 创建错误日志
+            with open(&apos;invoice/log/error-{}.log&apos;.format(datetime.now().strftime(&apos;%Y年%m月%d日%H-%M&apos;)), &apos;a&apos;, encoding=&apos;utf-8&apos;) as f:
+                f.write(self.pdf_file_path+&apos;  &apos;+str(e) +
+                        &apos;\r\n&apos;+str(self.json)+&apos;\r\n&apos;)
+            #print(e)
+            #print(&apos;处理json文件出错&apos;)
+        # 抛出异常
+        else:
+            #print(&apos;处理json文件成功&apos;)
+            print(&apos;处理json文件成功&apos;,self.pdf_file_path)
+            # 创建成功日志
+            with open(&apos;invoice/log/success-{}.log&apos;.format(datetime.now().strftime(&apos;%Y年%m月%d日%H-%M&apos;)), &apos;a&apos;, encoding=&apos;utf-8&apos;) as f:
+                f.write(self.pdf_file_path+&apos;\r\n&apos;)
+
+        self.generate_word()
+        self.cp()
+        # options = {}
+        # options[&apos;pdf_file_num&apos;] = get_pdf_num(pdf_file_path)
+        # res_pdf = client.vatInvoicePdf(pdf_file, options)
+        # # 保存json数据
+        # with open(&apos;invoice/1.json&apos;, &apos;w&apos;, encoding=&apos;utf-8&apos;) as f:
+        #     json.dump(res_pdf, f, ensure_ascii=False, indent=4)
+
+    def dealdebug(self):
+        self.ocr()
+        # 捕捉异常
+        
+        self.handle_json()
+        
+
+        self.generate_word()
+        # options = {}
+        # options[&apos;pdf_file_num&apos;] = get_pdf_num(pdf_file_path)
+        # res_pdf = client.vatInvoicePdf(pdf_file, options)
+        # # 保存json数据
+        # with open(&apos;invoice/1.json&apos;, &apos;w&apos;, encoding=&apos;utf-8&apos;) as f:
+        #     json.dump(res_pdf, f, ensure_ascii=False, indent=4)
+
+# read json
+
+
+# def read_json(file_path):
+#     with open(file_path, &apos;r&apos;, encoding=&apos;utf-8&apos;) as f:
+#         json_data = json.load(f)
+#         handle_json(json_data)
+if __name__ == &apos;__main__&apos;:
+
+    for i in get_pdffiles(&apos;invoice/new&apos;):
+        WarehouseReceipt(i).deal()
+    
+    #WarehouseReceipt(&apos;invoice/new/202205171971483062.pdf&apos;).dealdebug()
+
+
+    # WarehouseReceipt(&apos;invoice\new\202209102153729425.pdf&apos;).deal()
+
+
+
+
+
+
+
+
+
+
+
+
+    # wh1 = WarehouseReceipt(&apos;invoice/invoice.pdf&apos;)
+
+    # with open(&apos;invoice/invoice.json&apos;, &apos;r&apos;, encoding=&apos;utf-8&apos;) as f:
+    #     wh1.json = json.load(f)
+    # wh1.ocr()
+    # wh1.handle_json()
+    # wh1.deal()
+    # wh1.handle_json()
+
+    # wh1 = WarehouseReceipt()
+    # with open(&apos;invoice/invoice.json&apos;, &apos;r&apos;, encoding=&apos;utf-8&apos;) as f:
+    #     wh1.json = json.load(f)
+    # wh1.handle_json()
+    # wh1.generate_word()
+
+    # read_json(&apos;invoice/invoice.json&apos;)
+    # read_json(&apos;invoice/1.json&apos;)
+
+    # pdf_file_path = &apos;invoice/1.pdf&apos;
+    # pdf_file = get_file_content(pdf_file_path)
+    # options = {}
+    # options[&apos;pdf_file_num&apos;] = get_pdf_num(pdf_file_path)
+    # res_pdf = client.vatInvoicePdf(pdf_file, options)
+    # # 保存json数据
+    # with open(&apos;invoice/1.json&apos;, &apos;w&apos;, encoding=&apos;utf-8&apos;) as f:
+    #     json.dump(res_pdf, f, ensure_ascii=False, indent=4)
+
+
+# 从文件读取json数据(测试用)
+
+
+# 调用增值税发票识别
+# res_image = client.vatInvoice(image)
+# res_url = client.vatInvoiceUrl(url)
+# res_pdf = client.vatInvoicePdf(pdf_file)
+# #print(res_image)
+# #print(res_url)
+# #print(res_pdf)
+
+
+# 如果有可选参数
+# options = {}
+
+# options[&apos;pdf_file_num&apos;] = get_invoice_num(file_path)
+# res_image = client.vatInvoice(image, options)
+# res_url = client.vatInvoiceUrl(url, options)
+# res_pdf = client.vatInvoicePdf(pdf_file, options)
+# #print(res_image)
+# #print(res_url)
+# #print(res_pdf)
+&lt;/code&gt;&lt;/pre&gt;
+</content:encoded></item><item><title>三根杆</title><link>https://undf.cn/posts/post/code/robot/%E4%B8%89%E8%87%AA%E7%94%B1%E5%BA%A6/</link><guid isPermaLink="true">https://undf.cn/posts/post/code/robot/%E4%B8%89%E8%87%AA%E7%94%B1%E5%BA%A6/</guid><pubDate>Mon, 03 Jan 2022 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;初&lt;/h2&gt;
+&lt;p&gt;机械手臂（英语：robotic arm）是具有模仿人类手臂功能并可完成各种作业的自动控制设备，这种机器人系统有多关节连结并节允许在平面或三度空间进行运动或使用线性位移移动。&lt;/p&gt;
+&lt;p&gt;本文的主题是平面三轴机械臂。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/index/2021-12-21-17-53-30.gif&quot; alt=&quot;TU&quot; /&gt;&lt;/p&gt;
+&lt;h2&gt;启&lt;/h2&gt;
+&lt;p&gt;首先来学习一下单轴的，如下图：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/image/%E4%B8%89%E8%87%AA%E7%94%B1%E5%BA%A6/2022-01-03-10-38-07.png&quot; alt=&quot;2022-01-03-10-38-07&quot; /&gt;
+（系统画图画的）&lt;/p&gt;
+&lt;p&gt;将物理问题转化为数学问题，建立坐标系：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/image/%E4%B8%89%E8%87%AA%E7%94%B1%E5%BA%A6/2022-01-03-10-41-42.png&quot; alt=&quot;2022-01-03-10-41-42&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;杆长取&lt;code&gt;r&lt;/code&gt;很容易就能得到端点坐标为&lt;code&gt;rcosα,rscinα&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;是不是很简单，那接下来看两个杆。&lt;/p&gt;
+&lt;h2&gt;中&lt;/h2&gt;
+&lt;p&gt;如图所示
+&lt;img src=&quot;https://i.undf.cn/file/image/%E4%B8%89%E8%87%AA%E7%94%B1%E5%BA%A6/2022-01-03-10-46-00.png&quot; alt=&quot;2022-01-03-10-46-00&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;继续将物理问题转化为数学问题，建立坐标系：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/image/%E4%B8%89%E8%87%AA%E7%94%B1%E5%BA%A6/2022-01-03-10-51-13.png&quot; alt=&quot;2022-01-03-10-51-13&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;这里我作了两条辅助线用来辅助理解&lt;/p&gt;
+&lt;p&gt;图中α，β为绝对角度（也就是相对于x轴的角度），θ1，2，是相对角度（相对于上一段的角度）他的值可能为正也可能为负值，这样我们就能得到α，β与θ的表达式&lt;code&gt;α=θ1，β=θ1+θ2&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;杆长依旧取&lt;code&gt;r&lt;/code&gt;，为了便于说明这里三根杆的长度都取&lt;code&gt;r&lt;/code&gt;这里我们很容易就能得到最右端坐标的表达式为：&lt;code&gt;rcosα+rcosβ,rscinα+rsinβ&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;同理我们可以得到三杆的表达式&lt;code&gt;α=θ1，β=θ1+θ2，γ=θ1+θ2+θ3&lt;/code&gt;和&lt;code&gt;rcosα+rcosβ+rcosγ,rscinα+rsinβ+rsinγ&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;到这里你肯定觉得这好简单，为什么要写一篇文章讲这个？&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;上述思路皆为正运动学（正运动学可以大致理解为已知三根杆的长度和角度，求端点坐标）。
+既然有正运动学，就会有逆运动学（逆运动学可以理解为已知三杆长度和端点坐标，求相关角度）。
+而在实际运用中，逆运动学往往更多，比如抓取物体。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2&gt;潮&lt;/h2&gt;
+&lt;p&gt;咱们还是从简单的开始&lt;/p&gt;
+&lt;p&gt;杆长&lt;code&gt;r&lt;/code&gt;，端点坐标为&lt;code&gt;x,y&lt;/code&gt;，很容易就能得到α角度&lt;code&gt;arccos(r/x),arcsin(r/y)&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;接下来看两杆&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/image/%E4%B8%89%E8%87%AA%E7%94%B1%E5%BA%A6/2022-01-03-10-51-13.png&quot; alt=&quot;2022-01-03-10-51-13&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;依旧看这幅图，很容易就能想到余弦定理求角度，这没问题，但你可能会遇到一个问题，如图&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/image/%E4%B8%89%E8%87%AA%E7%94%B1%E5%BA%A6/2022-01-03-12-05-57.png&quot; alt=&quot;2022-01-03-12-05-57&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;你得到的结果可能是两个，这个时候就需要添加条件排除掉其中一个，或者根据条件选取最合适的一个，比如说让相对角度尽可能小，这样可以减少电机转动的圈数。&lt;/p&gt;
+&lt;p&gt;两杆就开始有多解，那三杆呢，肯定会有更多解，这个时候就要根据项目的具体情况去添加限制条件，下面拿具体项目来讲讲。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;题目：使用摄像头进行识别并抓取物块放到指定的位置&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这里是三个杆，就要想办法增加条件限制解的个数，比如物体的姿态，机械爪需要从哪个角度抓取等等条件。&lt;/p&gt;
+&lt;p&gt;我这里增加的就是物体姿态角，通过姿态角将三杆问题转化为两杆，再增加相对角度之和最小的条件得到最终结果。&lt;/p&gt;
+&lt;p&gt;如图所示：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/index/2021-12-21-17-53-30.gif&quot; alt=&quot;动图&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;下面详细介绍具体过程和代码实现（MFC &amp;amp; C++）&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;求解
+根据坐标和姿态计算角度&lt;/li&gt;
+&lt;li&gt;移动到合适的抓取姿态
+依次转动三根杆到合适的角度（也可以同时转动）&lt;/li&gt;
+&lt;li&gt;抓取
+进行抓取&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;在这三个过程中还要通过正运动学计算并绘制爪子
+另外，计算机的坐标原点和xy轴都在左上角，并不是中心点，需要进行坐标系变换，这里不再详细讲述。&lt;/p&gt;
+&lt;p&gt;源码仓库&lt;a href=&quot;https://github.com/wxydejoy/DrawPath/&quot;&gt;GitHub - wxydejoy/DrawPath: 三杆 机械臂&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;这里就不对代码进行介绍了，内容很多，核心部分以及思路已经在上述内容中讲过，欢迎指正。&lt;/p&gt;
+&lt;h2&gt;终&lt;/h2&gt;
+&lt;p&gt;思路其实不是很难，难的是其中的细节，敲错一点或者有理解不清楚的结果就会完全不一样。&lt;/p&gt;
+&lt;p&gt;平面三杆已经有点复杂了，那如果是空间三杆呢？如何计算？&lt;/p&gt;
+&lt;h2&gt;引&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;https://zh.wikipedia.org/wiki/%E6%A9%9F%E6%A2%B0%E6%89%8B%E8%87%82&quot;&gt;機械手臂 - 维基百科，自由的百科全书&lt;/a&gt;&lt;/p&gt;
+</content:encoded></item><item><title>气阀板使用说明</title><link>https://undf.cn/posts/post/life/%E6%B0%94%E9%98%80%E6%9D%BF%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E/</link><guid isPermaLink="true">https://undf.cn/posts/post/life/%E6%B0%94%E9%98%80%E6%9D%BF%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E/</guid><pubDate>Fri, 14 May 2021 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;物料准备&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;气阀控制板&lt;/li&gt;
+&lt;li&gt;气阀（smc 比例阀,需自备）&lt;/li&gt;
+&lt;li&gt;电源&lt;/li&gt;
+&lt;li&gt;蓝牙模块&lt;/li&gt;
+&lt;li&gt;若干接线端子&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2&gt;硬件安装&lt;/h2&gt;
+&lt;h3&gt;比例阀接线（已经接好）&lt;/h3&gt;
+&lt;p&gt;注意判断比例阀反馈信号是否为电压型 5V，如果不是不要接黑色线。如果不确定，请联系我!!&lt;/p&gt;
+&lt;p&gt;根据线缆颜色根据图片接线，注意正反！&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/ob/6c66848c9658f7655b2da990fc065602.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+&lt;h3&gt;蓝牙模块连接（已经接好）&lt;/h3&gt;
+&lt;p&gt;这里需要接 4 跟线：&lt;code&gt;3.3V&lt;/code&gt; &lt;code&gt;GND&lt;/code&gt; 根据控制板上的标识和蓝牙模块上的标识一一对应。
+&lt;code&gt;RX&lt;/code&gt; &lt;code&gt;TX&lt;/code&gt; 需要根据串口协议进行反接，只需要这四根&lt;/p&gt;
+&lt;h2&gt;软件安装与使用&lt;/h2&gt;
+&lt;p&gt;软件下载链接 &lt;a href=&quot;https://wekko.lanzout.com/iMIu91ucfsre&quot;&gt;https://wekko.lanzout.com/ikSh82071ila&lt;/a&gt;&lt;/p&gt;
+&lt;h3&gt;连接蓝牙&lt;/h3&gt;
+&lt;p&gt;系统设置 -&amp;gt; 蓝牙和其他设备 -&amp;gt; 添加设备&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/ob/a49db4ec36204a6ae602c8fe2b56b778.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;单击蓝牙&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/ob/30f41666105cfed4c5d2160f74d59b26.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;找到设备 &lt;code&gt;ITV&lt;/code&gt;  配对密码 &lt;code&gt;1234&lt;/code&gt; 配对成功即可&lt;/p&gt;
+&lt;h3&gt;连接蓝牙&lt;/h3&gt;
+&lt;p&gt;打开软件单击 &lt;code&gt;查看蓝牙对应的串口&lt;/code&gt;
+&lt;img src=&quot;https://i.undf.cn/file/ob/2746e23f202828ba2edec700aa064a67.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;找到蓝牙模块对应的串口号&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/ob/6bbe7e82ff65bbfe119f4e9e9968a838.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;选择对应的串口，单击打开串口，程序按钮文字会变为关闭窗口，此时即为连接成功&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/ob/36009238d7d535a673092163637a3582.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;有时会有这种弹窗点击后输入 pin 1234 即可
+&lt;img src=&quot;https://i.undf.cn/file/ob/8197a898eccb1a4ce198238ac6cf94c9.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+&lt;h3&gt;软件使用&lt;/h3&gt;
+&lt;p&gt;若不使用蓝牙，串口配置如下：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/ob/267d8627e8eb587bebd6f34c878ff34a.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;每个比例阀都由一个模块控制，这里的值只有在敲回车或者点击空白处才会生效，而进度条即时生效。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://i.undf.cn/file/ob/68a90a422e6368ec25eeed86e1daeeda.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;右侧可以简单编程后运行&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;// 命令以行分隔
+D100 // 延时100ms
+A00B1000 // 通道0设置为1000
+A99B0000 // 读取ADC
+支持读取和保存为txt文件
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;底部有一些按钮可以辅助编程&lt;/p&gt;
+&lt;h2&gt;通信协议&lt;/h2&gt;
+&lt;p&gt;注：// 后为注释&lt;/p&gt;
+&lt;p&gt;上位机 -&amp;gt; 控制板&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;A00B0000 // 通道0气压值0
+A01B1000 // 通道1气压值0.1MPa
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;控制板 -&amp;gt; 上位机&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;T: 时间戳 ch：各个通道的值，这里对应的电压值
+&lt;/code&gt;&lt;/pre&gt;
+</content:encoded></item></channel></rss>

@@ -1,0 +1,164 @@
+<!DOCTYPE html><html lang="zh-CN" class="landing-page" style="background:#000"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#05060d"><meta name="view-transition" content="same-origin"><script>
+      /* 从博客返回时:以博客当时的背景色/渐变作为首屏遮罩,再渐隐到深色落地页。
+         遮罩在 head 同步放(首帧前),保证无 VT 环境零闪烁;跨文档 View Transition
+         是否激活要等首帧前的 pagereveal 才见分晓——若 e.viewTransition 非空,
+         说明原生过渡已接管,此时遮罩还未绘制过,直接撤掉即可,两层动画不会叠加。
+         标记由博客端 Layout.astro 的 setupLandingTransition 写入。 */
+      (function () {
+        var style = null;
+        var revealTimer = 0;
+        var teardown = function () {
+          if (revealTimer) { clearTimeout(revealTimer); revealTimer = 0; }
+          if (style) { style.remove(); style = null; }
+          document.documentElement.classList.remove("blog-arriving", "blog-reveal");
+        };
+        try {
+          /* 只有博客来路才整屏遮罩(明→暗切换):先纯黑,再 600ms 渐开。
+             主站落地页来路不放假遮罩:两页导航一致、同为纯黑底,
+             子页自己的 dk-load/dk-reveal 入场就是"导航不动、只过渡正文"。
+             landing-transition 是写给博客的标记,这里只消费不使用。 */
+          var bt = JSON.parse(sessionStorage.getItem("blog-transition") || "null");
+          sessionStorage.removeItem("blog-transition");
+          sessionStorage.removeItem("landing-transition");
+          if (
+            bt && Date.now() - bt.t <= 3000 &&
+            !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ) {
+            style = document.createElement("style");
+            style.textContent =
+              "html.blog-arriving::after{content:'';position:fixed;inset:0;z-index:99999;pointer-events:none;" +
+              "opacity:1;transition:opacity 600ms ease;background:#000}" +
+              "html.blog-arriving.blog-reveal::after{opacity:0}";
+            document.head.appendChild(style);
+            document.documentElement.classList.add("blog-arriving");
+
+            var reveal = function () {
+              requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                  if (!style) return;
+                  document.documentElement.classList.add("blog-reveal");
+                });
+              });
+              revealTimer = setTimeout(teardown, 1000);
+            };
+            if (document.readyState === "loading") {
+              document.addEventListener("DOMContentLoaded", reveal);
+            } else {
+              reveal();
+            }
+          }
+        } catch (e) { /* 忽略 sessionStorage 异常 */ }
+        window.addEventListener("pagereveal", function (e) {
+          if (e.viewTransition) {
+            document.documentElement.classList.add("vt-taken");
+            if (style) teardown();
+          }
+        });
+      })();
+    </script><title>时间线 - 守岸人专栏</title><meta name="description" content="守岸人专栏——黑海岸的守护者「第二实例」：角色档案、人物介绍、经典语录与图鉴。"><link rel="icon" href="/favicon/favicon.ico"><link rel="preload" href="/landing/fonts/lxgw-wenkai-screen.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/landing/style.css?v=20261101-4"><link rel="stylesheet" href="/landing/sk.css?v=20261101-4"><script type="module" src="/_astro/page.BpImQfZc.js"></script></head> <body>  <main class="sk-page"> <nav class="dk-nav" aria-label="站点导航"> <a class="dk-nav-brand" href="/" data-no-swup> <svg width="1em" height="1em" viewBox="0 0 24 24" class="dk-nav-brand-icon" aria-hidden="true" data-icon="material-symbols:home-outline-rounded">   <symbol id="ai:material-symbols:home-outline-rounded"><path fill="currentColor" d="M6 19h3v-5q0-.425.288-.712T10 13h4q.425 0 .713.288T15 14v5h3v-9l-6-4.5L6 10zm-2 0v-9q0-.475.213-.9t.587-.7l6-4.5q.525-.4 1.2-.4t1.2.4l6 4.5q.375.275.588.7T20 10v9q0 .825-.588 1.413T18 21h-4q-.425 0-.712-.288T13 20v-5h-2v5q0 .425-.288.713T10 21H6q-.825 0-1.412-.587T4 19m8-6.75"/></symbol><use href="#ai:material-symbols:home-outline-rounded"></use>  </svg> <span>沐沐小站</span> </a> <div class="dk-nav-links"> <a href="/shorekeeper/intro/" class="dk-nav-link" data-no-swup> 简介 </a><a href="/shorekeeper/skills/" class="dk-nav-link" data-no-swup> 技能详情 </a><a href="/shorekeeper/profile/" class="dk-nav-link" data-no-swup> 档案 </a><a href="/shorekeeper/history/" class="dk-nav-link" data-no-swup> 经历 </a><a href="/shorekeeper/gallery/" class="dk-nav-link" data-no-swup> 画廊 </a><a href="/shorekeeper/timeline/" class="dk-nav-link is-active" data-no-swup> 时间线 </a> </div> </nav> <header class="sk-page-head"> <h1 class="sk-section-title">时间线</h1> <p class="sk-page-lede">从 1.3 实装到二周年巡演——每一次联动、每一张贺图，按时间排成一条海岸线。</p> </header> <div class="sk-content"> <section class="sk-section is-wide dk-reveal"> <ol class="sk-timeline"> <li class="sk-tl-item" id="tl-1"> <span class="sk-tl-date">2024.09</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2024-09-26_梦的解析.jpg.webp" data-lb-caption="2024.09 · 寰宇频道 · 梦的解析 · 官方考据栏目「寰宇频道特别栏目」守岸人篇《梦的解析》9 月 26 日播出。"> <img src="https://i.undf.cn/file/shorekeeper/2024-09-26_梦的解析.jpg.webp" width="2666" height="1500" alt="寰宇频道特别栏目《梦的解析》封面" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">寰宇频道 · 梦的解析</h4> <p class="sk-tl-desc">官方考据栏目「寰宇频道特别栏目」守岸人篇《梦的解析》9 月 26 日播出。</p> </div> </li><li class="sk-tl-item" id="tl-2"> <span class="sk-tl-date">2024.09</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2024-09-26_《鸣潮》2024东京电玩展：男漂泊者、守岸人、秋水、安可.jpg.webp" data-lb-caption="2024.09 · 东京电玩展 2024 · 《鸣潮》出展 TGS2024（9 月 26 日开幕），守岸人与秋水、安可同台亮相。"> <img src="https://i.undf.cn/file/shorekeeper/2024-09-26_《鸣潮》2024东京电玩展：男漂泊者、守岸人、秋水、安可.jpg.webp" width="1200" height="675" alt="2024 东京电玩展《鸣潮》展台合影：男漂泊者、守岸人、秋水、安可" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">东京电玩展 2024</h4> <p class="sk-tl-desc">《鸣潮》出展 TGS2024（9 月 26 日开幕），守岸人与秋水、安可同台亮相。</p> </div> </li><li class="sk-tl-item" id="tl-3"> <span class="sk-tl-date">2024.09</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2024-09-27_PV-溯而复始.jpg.webp" data-lb-caption="2024.09 · 展示PV · 溯而复始 · 共鸣者「守岸人」展示PV《溯而复始》9 月 27 日发布。"> <img src="https://i.undf.cn/file/shorekeeper/2024-09-27_PV-溯而复始.jpg.webp" width="2560" height="1440" alt="守岸人展示PV《溯而复始》主视觉" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">展示PV · 溯而复始</h4> <p class="sk-tl-desc">共鸣者「守岸人」展示PV《溯而复始》9 月 27 日发布。</p> </div> </li><li class="sk-tl-item" id="tl-4"> <span class="sk-tl-date">2024.09</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2024-09-28_唤取海报.jpg.webp" data-lb-caption="2024.09 · 1.3 版本 · 守岸人实装 · 1.3 版本 9 月 28 日上线，守岸人实装并开启限定唤取，黑海岸群岛同步开放。"> <img src="https://i.undf.cn/file/shorekeeper/2024-09-28_唤取海报.jpg.webp" width="1920" height="1080" alt="守岸人限定唤取海报" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">1.3 版本 · 守岸人实装</h4> <p class="sk-tl-desc">1.3 版本 9 月 28 日上线，守岸人实装并开启限定唤取，黑海岸群岛同步开放。</p> </div> </li><li class="sk-tl-item" id="tl-5"> <span class="sk-tl-date">2024.09</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2024-09_2024年，《鸣潮》确认参展CICF×AGF漫展.jpg.webp" data-lb-caption="2024.09 · CICF×AGF 2024 参展 · 《鸣潮》确认参展广州 CICF×AGF 漫展（10 月 2 日–5 日）。"> <img src="https://i.undf.cn/file/shorekeeper/2024-09_2024年，《鸣潮》确认参展CICF×AGF漫展.jpg.webp" width="2208" height="1242" alt="《鸣潮》确认参展 2024 CICF×AGF 漫展" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">CICF×AGF 2024 参展</h4> <p class="sk-tl-desc">《鸣潮》确认参展广州 CICF×AGF 漫展（10 月 2 日–5 日）。</p> </div> </li><li class="sk-tl-item" id="tl-6"> <span class="sk-tl-date">2024.10</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2024-10_守岸人壁纸.png.webp" data-lb-caption="2024.10 · 官方桌布分享 · 官网与官方 X 配布守岸人官方桌布，含 PC、手机与超宽屏规格（10 月 3 日起）。"> <img src="https://i.undf.cn/file/shorekeeper/2024-10_守岸人壁纸.png.webp" width="3840" height="2160" alt="守岸人官方桌布：花海与蝶" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">官方桌布分享</h4> <p class="sk-tl-desc">官网与官方 X 配布守岸人官方桌布，含 PC、手机与超宽屏规格（10 月 3 日起）。</p> </div> </li><li class="sk-tl-item" id="tl-7"> <span class="sk-tl-date">2024.10</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2024-10_韩国首尔龙山快闪：守岸人、釉瑚.jpg.webp" data-lb-caption="2024.10 · 首尔龙山快闪 · 韩国「띵조파크 in 용산」快闪（10 月 3 日–9 日），守岸人、釉瑚主题打卡与周边。"> <img src="https://i.undf.cn/file/shorekeeper/2024-10_韩国首尔龙山快闪：守岸人、釉瑚.jpg.webp" width="1200" height="675" alt="韩国首尔龙山快闪主视觉：守岸人与釉瑚" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">首尔龙山快闪</h4> <p class="sk-tl-desc">韩国「띵조파크 in 용산」快闪（10 月 3 日–9 日），守岸人、釉瑚主题打卡与周边。</p> </div> </li><li class="sk-tl-item" id="tl-8"> <span class="sk-tl-date">2024.10</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2024-10_与你同行《更多的风景》1：_女漂泊者、守岸人.jpg.webp" data-lb-caption="2024.10 · 与你同行 · 更多的风景 · 国庆假期官方插画系列《更多的风景》：漂泊者与守岸人同游山水。"> <img src="https://i.undf.cn/file/shorekeeper/2024-10_与你同行《更多的风景》1：_女漂泊者、守岸人.jpg.webp" width="2659" height="1748" alt="官方系列插画《更多的风景》：女漂泊者与守岸人" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">与你同行 · 更多的风景</h4> <p class="sk-tl-desc">国庆假期官方插画系列《更多的风景》：漂泊者与守岸人同游山水。</p> </div> </li><li class="sk-tl-item" id="tl-9"> <span class="sk-tl-date">2024.10</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2024-10_星海拾影拍照活动.jpg.webp" data-lb-caption="2024.10 · 星海拾影 · 拍照活动 · 1.3 期间网页活动「星海拾影」，在黑海岸与守岸人的影子相遇。"> <img src="https://i.undf.cn/file/shorekeeper/2024-10_星海拾影拍照活动.jpg.webp" width="1920" height="1080" alt="星海拾影拍照活动" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">星海拾影 · 拍照活动</h4> <p class="sk-tl-desc">1.3 期间网页活动「星海拾影」，在黑海岸与守岸人的影子相遇。</p> </div> </li><li class="sk-tl-item" id="tl-10"> <span class="sk-tl-date">2024.10</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2024-10_黑海岸的日常_共奏一曲：_男漂泊者、守岸人.jpg.webp" data-lb-caption="2024.10 · 黑海岸的日常 · 共奏一曲 · 官方 Q 版日常系列「黑海岸的日常」共奏一曲篇，与守岸人四手联弹。"> <img src="https://i.undf.cn/file/shorekeeper/2024-10_黑海岸的日常_共奏一曲：_男漂泊者、守岸人.jpg.webp" width="1920" height="1080" alt="官方Q版日常系列《黑海岸的日常》共奏一曲：男漂泊者与守岸人弹琴" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">黑海岸的日常 · 共奏一曲</h4> <p class="sk-tl-desc">官方 Q 版日常系列「黑海岸的日常」共奏一曲篇，与守岸人四手联弹。</p> </div> </li><li class="sk-tl-item" id="tl-11"> <span class="sk-tl-date">2024.11</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="/shorekeeper/gallery/collab-rakuspa.webp" data-lb-caption="2024.11 · 極楽湯 RAKU SPA · 温泉装 · 日本極楽湯联动主视觉，守岸人戴上睡帽、换上浴衣与椿、秧秧、漂泊者同框。"> <img src="/shorekeeper/gallery/collab-rakuspa.webp" width="1620" height="906" alt="鸣潮×極楽湯 RAKU SPA 温泉联动主视觉" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">極楽湯 RAKU SPA · 温泉装</h4> <p class="sk-tl-desc">日本極楽湯联动主视觉，守岸人戴上睡帽、换上浴衣与椿、秧秧、漂泊者同框。</p> </div> </li><li class="sk-tl-item" id="tl-12"> <span class="sk-tl-date">2024.11</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="/shorekeeper/gallery/collab-xihu-kv.webp" data-lb-caption="2024.11 · 西湖 · 断云波板糖 · 杭州西湖主题联动快闪 KV——守岸人换上蓝白异域风短打装束，与椿执扇同游湖畔。"> <img src="/shorekeeper/gallery/collab-xihu-kv.webp" width="1482" height="1004" alt="鸣潮×西湖「断云波板糖」主题快闪主视觉" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">西湖 · 断云波板糖</h4> <p class="sk-tl-desc">杭州西湖主题联动快闪 KV——守岸人换上蓝白异域风短打装束，与椿执扇同游湖畔。</p> </div> </li><li class="sk-tl-item" id="tl-13"> <span class="sk-tl-date">2024.11</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="/shorekeeper/gallery/collab-xihu-standee.webp" data-lb-caption="2024.11 · 西湖联动 · 异域装立牌 · 西湖快闪周边：守岸人 180mm 异域装亚克力立牌，蓝色蝴蝶停驻指尖。"> <img src="/shorekeeper/gallery/collab-xihu-standee.webp" width="1040" height="990" alt="西湖联动守岸人异域装亚克力立牌" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">西湖联动 · 异域装立牌</h4> <p class="sk-tl-desc">西湖快闪周边：守岸人 180mm 异域装亚克力立牌，蓝色蝴蝶停驻指尖。</p> </div> </li><li class="sk-tl-item" id="tl-14"> <span class="sk-tl-date">2024.12</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="/shorekeeper/gallery/collab-animate.webp" data-lb-caption="2024.12 · animate · 冬日邀约 · 「冬日邀约」主题周边快闪主视觉——吟霖、守岸人、漂泊者、椿、相里要五人冬装同框，守岸人一袭蓝白洋装。"> <img src="/shorekeeper/gallery/collab-animate.webp" width="1620" height="912" alt="鸣潮×animate「冬日邀约」主题周边快闪主视觉" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">animate · 冬日邀约</h4> <p class="sk-tl-desc">「冬日邀约」主题周边快闪主视觉——吟霖、守岸人、漂泊者、椿、相里要五人冬装同框，守岸人一袭蓝白洋装。</p> </div> </li><li class="sk-tl-item" id="tl-15"> <span class="sk-tl-date">2025.01</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="/shorekeeper/gallery/collab-sushiro.webp" data-lb-caption="2025.01 · 壽司郎 · 春之鳴饗 · 台湾壽司郎联动现场：守岸人与椿的新春装立牌、徽章与 Q 版插卡。"> <img src="/shorekeeper/gallery/collab-sushiro.webp" width="1600" height="900" alt="壽司郎×鸣潮「春之鳴饗」联动周边实拍，含守岸人压克力立牌" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">壽司郎 · 春之鳴饗</h4> <p class="sk-tl-desc">台湾壽司郎联动现场：守岸人与椿的新春装立牌、徽章与 Q 版插卡。</p> </div> </li><li class="sk-tl-item" id="tl-16"> <span class="sk-tl-date">2025.01</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2025-01_因你而生2：_男漂泊者、守岸人.jpg.webp" data-lb-caption="2025.01 · 2.0 官网 · 因你而生 · 2.0 版本官网主题页「世界·因你而生」上线，守岸人与漂泊者主视觉。"> <img src="https://i.undf.cn/file/shorekeeper/2025-01_因你而生2：_男漂泊者、守岸人.jpg.webp" width="3300" height="1856" alt="2.0 官网主题页「因你而生」：男漂泊者与守岸人" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">2.0 官网 · 因你而生</h4> <p class="sk-tl-desc">2.0 版本官网主题页「世界·因你而生」上线，守岸人与漂泊者主视觉。</p> </div> </li><li class="sk-tl-item" id="tl-17"> <span class="sk-tl-date">2025.01</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2025-01_2025年同人特别节目「索拉逐星舞台」特邀嘉宾_Vol.4：守岸人、椿、秋水、男漂泊者.jpg.webp" data-lb-caption="2025.01 · 索拉逐星舞台 · 特邀嘉宾 · 2025 同人特别节目「索拉逐星舞台」1 月 18 日开播，守岸人登特邀嘉宾 Vol.4。"> <img src="https://i.undf.cn/file/shorekeeper/2025-01_2025年同人特别节目「索拉逐星舞台」特邀嘉宾_Vol.4：守岸人、椿、秋水、男漂泊者.jpg.webp" width="1920" height="1080" alt="索拉逐星舞台特邀嘉宾 Vol.4：守岸人、椿、秋水、男漂泊者" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">索拉逐星舞台 · 特邀嘉宾</h4> <p class="sk-tl-desc">2025 同人特别节目「索拉逐星舞台」1 月 18 日开播，守岸人登特邀嘉宾 Vol.4。</p> </div> </li><li class="sk-tl-item" id="tl-18"> <span class="sk-tl-date">2025.02</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2025-02_“能再次与你一起分享这里的景色，我很高兴……可以再稍微，在这里停留片刻吗？”.jpg.webp" data-lb-caption="2025.02 · 生日贺图 · 花海 · 守岸人生日（2 月 27 日）贺图：能再次与你分享这里的景色。"> <img src="https://i.undf.cn/file/shorekeeper/2025-02_“能再次与你一起分享这里的景色，我很高兴……可以再稍微，在这里停留片刻吗？”.jpg.webp" width="1920" height="1080" alt="守岸人生日贺图：花海与蝶" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">生日贺图 · 花海</h4> <p class="sk-tl-desc">守岸人生日（2 月 27 日）贺图：能再次与你分享这里的景色。</p> </div> </li><li class="sk-tl-item" id="tl-19"> <span class="sk-tl-date">2025.03</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2025-03-04_高德地图联动“启程，漂泊者！”：_守岸人、阿布.jpg.webp" data-lb-caption="2025.03 · 高德地图 · 导航语音 · 鸣潮×高德地图联动，守岸人定制导航语音包 3 月 4 日上线。"> <img src="https://i.undf.cn/file/shorekeeper/2025-03-04_高德地图联动“启程，漂泊者！”：_守岸人、阿布.jpg.webp" width="1920" height="1080" alt="鸣潮×高德地图联动：守岸人与阿布" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">高德地图 · 导航语音</h4> <p class="sk-tl-desc">鸣潮×高德地图联动，守岸人定制导航语音包 3 月 4 日上线。</p> </div> </li><li class="sk-tl-item" id="tl-20"> <span class="sk-tl-date">2025.04</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="/shorekeeper/gallery/collab-samsung.webp" data-lb-caption="2025.04 · 三星 Galaxy · 星海嘉年华 · 韩国三星 Galaxy Store 联动 KV「고요한 바다에 빠진 카니발」——守岸人与坎特蕾拉化身深海漫游者。"> <img src="/shorekeeper/gallery/collab-samsung.webp" width="1620" height="924" alt="鸣潮×三星 Galaxy Store 韩国联动「星海嘉年华」主视觉" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">三星 Galaxy · 星海嘉年华</h4> <p class="sk-tl-desc">韩国三星 Galaxy Store 联动 KV「고요한 바다에 빠진 카니발」——守岸人与坎特蕾拉化身深海漫游者。</p> </div> </li><li class="sk-tl-item" id="tl-21"> <span class="sk-tl-date">2025.05</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2025-05-23_一周年大合影.jpg.webp" data-lb-caption="2025.05 · 一周年 · 大合影 · 一周年（5 月 23 日）：周年企划「潮声与群星」守岸人篇《海岸》与众共鸣者大合影。"> <img src="https://i.undf.cn/file/shorekeeper/2025-05-23_一周年大合影.jpg.webp" width="7373" height="1913" alt="一周年大合影" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">一周年 · 大合影</h4> <p class="sk-tl-desc">一周年（5 月 23 日）：周年企划「潮声与群星」守岸人篇《海岸》与众共鸣者大合影。</p> </div> </li><li class="sk-tl-item" id="tl-22"> <span class="sk-tl-date">2025.05</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2025-05_先约同人-Concerto一周年.jpeg.webp" data-lb-caption="2025.05 · Concerto · 一周年同人画展 · 一周年线上同人画展「Concerto」守岸人参展作品。"> <img src="https://i.undf.cn/file/shorekeeper/2025-05_先约同人-Concerto一周年.jpeg.webp" width="2880" height="2160" alt="Concerto 一周年同人画展守岸人作品" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">Concerto · 一周年同人画展</h4> <p class="sk-tl-desc">一周年线上同人画展「Concerto」守岸人参展作品。</p> </div> </li><li class="sk-tl-item" id="tl-23"> <span class="sk-tl-date">2025.05</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2025-05-30_屈臣氏饮用水联动：相里要、守岸人、布兰特、赞妮.jpg.webp" data-lb-caption="2025.05 · 屈臣氏 · 饮用水联动 · 鸣潮×屈臣氏蒸馏水「105℃热爱共鸣」联名礼盒 5 月 30 日开售。"> <img src="https://i.undf.cn/file/shorekeeper/2025-05-30_屈臣氏饮用水联动：相里要、守岸人、布兰特、赞妮.jpg.webp" width="4000" height="2250" alt="屈臣氏饮用水联动主视觉：相里要、守岸人、布兰特、赞妮" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">屈臣氏 · 饮用水联动</h4> <p class="sk-tl-desc">鸣潮×屈臣氏蒸馏水「105℃热爱共鸣」联名礼盒 5 月 30 日开售。</p> </div> </li><li class="sk-tl-item" id="tl-24"> <span class="sk-tl-date">2025.06</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2025-06-21_国际服粉丝创作特别企划「Solaris_Seaside_Story」：椿、男漂泊者、守岸人.jpg.webp" data-lb-caption="2025.06 · Solaris Seaside Story · 国际服粉丝创作特别企划「Solaris Seaside Story」6 月 21 日直播。"> <img src="https://i.undf.cn/file/shorekeeper/2025-06-21_国际服粉丝创作特别企划「Solaris_Seaside_Story」：椿、男漂泊者、守岸人.jpg.webp" width="1920" height="1080" alt="国际服粉丝创作特别企划 Solaris Seaside Story：椿、男漂泊者、守岸人" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">Solaris Seaside Story</h4> <p class="sk-tl-desc">国际服粉丝创作特别企划「Solaris Seaside Story」6 月 21 日直播。</p> </div> </li><li class="sk-tl-item" id="tl-25"> <span class="sk-tl-date">2025.11</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2025-11-20_时隙废都第二章「曙光停摆于荒地之上」《开业与星愿》：守岸人、男漂泊者、阿布、千咲、椿、卜灵.png.webp" data-lb-caption="2025.11 · 2.8 时隙废都 · 开业与星愿 · 2.8 版本「奔往琥珀之都」11 月 20 日上线，时隙废都剧情 CG《开业与星愿》。"> <img src="https://i.undf.cn/file/shorekeeper/2025-11-20_时隙废都第二章「曙光停摆于荒地之上」《开业与星愿》：守岸人、男漂泊者、阿布、千咲、椿、卜灵.png.webp" width="2560" height="1440" alt="2.8 剧情CG《开业与星愿》：守岸人与男漂泊者、阿布、千咲、椿、卜灵" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">2.8 时隙废都 · 开业与星愿</h4> <p class="sk-tl-desc">2.8 版本「奔往琥珀之都」11 月 20 日上线，时隙废都剧情 CG《开业与星愿》。</p> </div> </li><li class="sk-tl-item" id="tl-26"> <span class="sk-tl-date">2026.01</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="/shorekeeper/gallery/collab-kfc-piano.webp" data-lb-caption="2026.01 · 肯德基联动 PV · 礼服 · 「K-Land 号即将启航」联动 PV 中，守岸人换上白色晚礼服，在宴会厅的钢琴前落座。"> <img src="/shorekeeper/gallery/collab-kfc-piano.webp" width="1620" height="708" alt="鸣潮×肯德基联动 PV：守岸人身着白色礼服端坐钢琴前" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">肯德基联动 PV · 礼服</h4> <p class="sk-tl-desc">「K-Land 号即将启航」联动 PV 中，守岸人换上白色晚礼服，在宴会厅的钢琴前落座。</p> </div> </li><li class="sk-tl-item" id="tl-27"> <span class="sk-tl-date">2026.01</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="/shorekeeper/gallery/collab-kfc-kland.webp" data-lb-caption="2026.01 · 肯德基 K-Land 号 · 主视觉 · 椿、守岸人、卡提希娅、仇远四人盛装出席索拉里斯邮轮惊喜夜。"> <img src="/shorekeeper/gallery/collab-kfc-kland.webp" width="1620" height="722" alt="鸣潮×肯德基 K-Land 号联动主视觉：四位共鸣者的宴会合影" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">肯德基 K-Land 号 · 主视觉</h4> <p class="sk-tl-desc">椿、守岸人、卡提希娅、仇远四人盛装出席索拉里斯邮轮惊喜夜。</p> </div> </li><li class="sk-tl-item" id="tl-28"> <span class="sk-tl-date">2026.01</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="/shorekeeper/gallery/collab-kfc-poster.webp" data-lb-caption="2026.01 · 肯德基联动 · 官宣海报 · 「鸣潮启航！肯德基 K-Land 号」联名活动官宣图，全国 685 家主题店同步换装。"> <img src="/shorekeeper/gallery/collab-kfc-poster.webp" width="1620" height="726" alt="鸣潮×肯德基联动宣传海报" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">肯德基联动 · 官宣海报</h4> <p class="sk-tl-desc">「鸣潮启航！肯德基 K-Land 号」联名活动官宣图，全国 685 家主题店同步换装。</p> </div> </li><li class="sk-tl-item" id="tl-29"> <span class="sk-tl-date">2026.01</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2026-01_同人创作企划Solaris_Supercup™_Series：卜灵、守岸人、布兰特、陆·赫斯.jpg.webp" data-lb-caption="2026.01 · 索拉里斯超级杯™ Series · 2026 同人二创特别节目「索拉里斯超级杯™系列赛」开启。"> <img src="https://i.undf.cn/file/shorekeeper/2026-01_同人创作企划Solaris_Supercup™_Series：卜灵、守岸人、布兰特、陆·赫斯.jpg.webp" width="1920" height="1080" alt="同人创作企划 Solaris Supercup™ Series：卜灵、守岸人、布兰特、陆·赫斯" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">索拉里斯超级杯™ Series</h4> <p class="sk-tl-desc">2026 同人二创特别节目「索拉里斯超级杯™系列赛」开启。</p> </div> </li><li class="sk-tl-item" id="tl-30"> <span class="sk-tl-date">2026.02</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2026-02-14_2026日本情人节贺图：男漂泊者、阿布、守岸人、露帕、琳奈、莫宁、陆·赫斯.jpg.webp" data-lb-caption="2026.02 · 2026 日本情人节贺图 · 2026 日本情人节官方贺图（2 月 14 日）。"> <img src="https://i.undf.cn/file/shorekeeper/2026-02-14_2026日本情人节贺图：男漂泊者、阿布、守岸人、露帕、琳奈、莫宁、陆·赫斯.jpg.webp" width="7111" height="4000" alt="2026 日本情人节贺图：男漂泊者、阿布、守岸人、露帕、琳奈、莫宁、陆·赫斯" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">2026 日本情人节贺图</h4> <p class="sk-tl-desc">2026 日本情人节官方贺图（2 月 14 日）。</p> </div> </li><li class="sk-tl-item" id="tl-31"> <span class="sk-tl-date">2026.04</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="/shorekeeper/gallery/collab-yinyue-piano.webp" data-lb-caption="2026.04 · 鸣乐之时 · 钢琴海报 · 「All That Resonates」音乐主题周边系列守岸人款——透明纱衣，静坐琴前。"> <img src="/shorekeeper/gallery/collab-yinyue-piano.webp" width="1080" height="1440" alt="鸣潮「鸣乐之时」主题周边守岸人钢琴海报" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">鸣乐之时 · 钢琴海报</h4> <p class="sk-tl-desc">「All That Resonates」音乐主题周边系列守岸人款——透明纱衣，静坐琴前。</p> </div> </li><li class="sk-tl-item" id="tl-32"> <span class="sk-tl-date">2026.04</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2026-04_「致予新世界」.jpg.webp" data-lb-caption="2026.04 · 巡演 · 致予新世界 · 巡回演唱会「致予新世界」4 月 17 日公布，7 月 16 日上海首站开唱。"> <img src="https://i.undf.cn/file/shorekeeper/2026-04_「致予新世界」.jpg.webp" width="3840" height="2160" alt="巡回演唱会「致予新世界」主视觉" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">巡演 · 致予新世界</h4> <p class="sk-tl-desc">巡回演唱会「致予新世界」4 月 17 日公布，7 月 16 日上海首站开唱。</p> </div> </li><li class="sk-tl-item" id="tl-33"> <span class="sk-tl-date">2026.05</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2026-05-23_二周年大合影.jpg.webp" data-lb-caption="2026.05 · 二周年 · 大合影 · 二周年（5 月 23 日）大合影与 X 平台周年贺图。"> <img src="https://i.undf.cn/file/shorekeeper/2026-05-23_二周年大合影.jpg.webp" width="8268" height="3780" alt="二周年大合影" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">二周年 · 大合影</h4> <p class="sk-tl-desc">二周年（5 月 23 日）大合影与 X 平台周年贺图。</p> </div> </li><li class="sk-tl-item" id="tl-34"> <span class="sk-tl-date">2026.08</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2026-08_「致予新世界」首尔站展图：守岸人、莫宁、爱弥斯.jpg.webp" data-lb-caption="2026.08 · 致予新世界 · 首尔站 · 巡演首尔站展图：守岸人、莫宁、爱弥斯。"> <img src="https://i.undf.cn/file/shorekeeper/2026-08_「致予新世界」首尔站展图：守岸人、莫宁、爱弥斯.jpg.webp" width="11000" height="6189" alt="「致予新世界」首尔站展图：守岸人、莫宁、爱弥斯" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">致予新世界 · 首尔站</h4> <p class="sk-tl-desc">巡演首尔站展图：守岸人、莫宁、爱弥斯。</p> </div> </li><li class="sk-tl-item" id="tl-35"> <span class="sk-tl-date">2026.10</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/collab-sola.webp" data-lb-caption="2026.10 · 第二索拉 · 未名之梦 · 游戏内虚构游戏《第二索拉：未名之梦》开启预约（Meta Games 开发，计划 2026 年第四季度发行），守岸人以「角色三」身份换上便装亮相官网。"> <img src="https://i.undf.cn/file/shorekeeper/collab-sola.webp" width="511" height="982" alt="鸣潮《第二索拉：未名之梦》预约活动中守岸人的便装立绘" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">第二索拉 · 未名之梦</h4> <p class="sk-tl-desc">游戏内虚构游戏《第二索拉：未名之梦》开启预约（Meta Games 开发，计划 2026 年第四季度发行），守岸人以「角色三」身份换上便装亮相官网。</p> </div> </li><li class="sk-tl-item" id="tl-36"> <span class="sk-tl-date">2026.10</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2026-10-10_「索拉逐星舞台2」应援特辑_Vol.3：男漂泊者、秋水、守岸人、椿.jpg.webp" data-lb-caption="2026.10 · 索拉逐星舞台2 · 应援特辑 · 第二季 10 月 11 日开播，守岸人登应援特辑 Vol.3。"> <img src="https://i.undf.cn/file/shorekeeper/2026-10-10_「索拉逐星舞台2」应援特辑_Vol.3：男漂泊者、秋水、守岸人、椿.jpg.webp" width="1920" height="1080" alt="「索拉逐星舞台2」应援特辑 Vol.3：男漂泊者、秋水、守岸人、椿" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">索拉逐星舞台2 · 应援特辑</h4> <p class="sk-tl-desc">第二季 10 月 11 日开播，守岸人登应援特辑 Vol.3。</p> </div> </li><li class="sk-tl-item" id="tl-37"> <span class="sk-tl-date">2026.10</span> <button class="sk-shot-btn sk-tl-thumb" type="button" data-lb="https://i.undf.cn/file/shorekeeper/2026-10_「致予新世界」洛杉矶站展图：守岸人、布兰特、爱弥斯.jpg.webp" data-lb-caption="2026.10 · 致予新世界 · 洛杉矶站 · 巡演洛杉矶站展图：守岸人、布兰特、爱弥斯。"> <img src="https://i.undf.cn/file/shorekeeper/2026-10_「致予新世界」洛杉矶站展图：守岸人、布兰特、爱弥斯.jpg.webp" width="10497" height="5906" alt="「致予新世界」洛杉矶站展图：守岸人、布兰特、爱弥斯" loading="lazy" decoding="async"> </button> <div class="sk-tl-body"> <h4 class="sk-tl-title">致予新世界 · 洛杉矶站</h4> <p class="sk-tl-desc">巡演洛杉矶站展图：守岸人、布兰特、爱弥斯。</p> </div> </li> </ol> </section> </div> </main> <div class="sk-lightbox" id="sk-lightbox" role="dialog" aria-modal="true" aria-label="图片预览"> <button class="sk-lightbox-close" type="button" aria-label="关闭">×</button> <button class="sk-lightbox-prev" type="button" aria-label="上一张">‹</button> <img src="" alt=""> <button class="sk-lightbox-next" type="button" aria-label="下一张">›</button> <div class="sk-lightbox-caption"></div> </div>  <footer class="sk-footer"> <p class="sk-footer-note">
+资料整理自公开资料与
+<a href="https://wuwa.huijiwiki.com/" target="_blank" rel="noopener noreferrer">灰机wiki</a>（CC BY-NC-SA 4.0）
+          · 图片版权归
+<a href="https://www.kurogame.com/" target="_blank" rel="noopener noreferrer">库洛游戏</a>
+所有
+</p> <div class="dk-footer dk-footer--full"> <div class="dk-footer-line">
+© 2026 沐沐小站. All Rights Reserved. /
+<a href="/rss.xml" target="_blank" rel="noreferrer">
+RSS
+</a>
+/
+<a href="/sitemap-index.xml" target="_blank" rel="noreferrer">
+Sitemap
+</a> </div> <div class="dk-footer-line"> <a href="https://beian.mps.gov.cn/#/query/webSearch?code=33011302001366" target="_blank" rel="noreferrer" class="dk-footer-beian"> <img src="/beian-gongan.png" alt="" width="16" height="16" loading="lazy">
+浙公网安备33011302001366号
+</a> <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer">
+浙ICP备2021022005号
+</a> </div> <div class="dk-footer-line">
+Powered by <a href="https://astro.build" target="_blank" rel="noreferrer">Astro</a> &
+<a href="https://github.com/saicaca/fuwari" target="_blank" rel="noreferrer">Fuwari</a>
+·
+<a class="dk-footer-flavor" href="https://baike.baidu.com/item/%E5%AE%88%E5%B2%B8%E4%BA%BA/64754105" target="_blank" rel="noreferrer">
+守岸人
+</a>
+For
+<a class="dk-footer-flavor" href="https://baike.baidu.com/item/%E6%BC%82%E6%B3%8A%E8%80%85/61295829" target="_blank" rel="noreferrer">
+漂泊者
+</a>
+· <span class="dk-footer-version">Version 0.0.34</span> </div> </div> </footer> <script src="/landing/galaxy.js?v=20261101-3"></script> <script src="/landing/leave-transition.js?v=20261101-3"></script> <script>
+      (function () {
+        var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        var canvases = document.querySelectorAll(".sk-hero-background canvas");
+        if (!reduceMotion && window.stellar && window.stellar.galaxy) {
+          window.stellar.galaxy.mountAll(canvases);
+        }
+      })();
+    </script> <script>
+      /* 滚动显现:进入视口的 .dk-reveal 加 is-in(样式见 landing/style.css) */
+      (function () {
+        var els = Array.prototype.slice.call(document.querySelectorAll(".dk-reveal"));
+        if (!els.length) return;
+        if (!("IntersectionObserver" in window)) {
+          els.forEach(function (el) { el.classList.add("is-in"); });
+          return;
+        }
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-in");
+              io.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.08, rootMargin: "0px 0px -40px 0px" });
+        els.forEach(function (el) { io.observe(el); });
+      })();
+    </script> </body> </html> <script>
+  (function () {
+    var box = document.getElementById("sk-lightbox");
+    if (!box) return;
+    var img = box.querySelector("img");
+    var caption = box.querySelector(".sk-lightbox-caption");
+    var triggers = Array.prototype.slice.call(document.querySelectorAll("[data-lb]"));
+    var current = -1;
+
+    function show(src, text) {
+      img.src = src;
+      img.alt = text || "";
+      caption.textContent = text || "";
+    }
+
+    function step(dir) {
+      if (!triggers.length) return;
+      current = (current + dir + triggers.length) % triggers.length;
+      var t = triggers[current];
+      show(t.getAttribute("data-lb"), t.getAttribute("data-lb-caption"));
+    }
+
+    triggers.forEach(function (t) {
+      t.addEventListener("click", function () {
+        current = triggers.indexOf(t);
+        show(t.getAttribute("data-lb"), t.getAttribute("data-lb-caption"));
+        box.classList.add("open");
+      });
+    });
+    box.querySelector(".sk-lightbox-close").addEventListener("click", function () {
+      box.classList.remove("open");
+      img.src = "";
+    });
+    box.querySelector(".sk-lightbox-prev").addEventListener("click", function () { step(-1); });
+    box.querySelector(".sk-lightbox-next").addEventListener("click", function () { step(1); });
+    box.addEventListener("click", function (e) {
+      if (e.target === box) {
+        box.classList.remove("open");
+        img.src = "";
+      }
+    });
+    document.addEventListener("keydown", function (e) {
+      if (!box.classList.contains("open")) return;
+      if (e.key === "Escape") {
+        box.classList.remove("open");
+        img.src = "";
+      } else if (e.key === "ArrowLeft") step(-1);
+      else if (e.key === "ArrowRight") step(1);
+    });
+  })();
+</script>

@@ -1,0 +1,114 @@
+<!DOCTYPE html><html lang="zh-CN" class="landing-page" style="background:#000"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#05060d"><meta name="view-transition" content="same-origin"><script>
+      /* 从博客返回时:以博客当时的背景色/渐变作为首屏遮罩,再渐隐到深色落地页。
+         遮罩在 head 同步放(首帧前),保证无 VT 环境零闪烁;跨文档 View Transition
+         是否激活要等首帧前的 pagereveal 才见分晓——若 e.viewTransition 非空,
+         说明原生过渡已接管,此时遮罩还未绘制过,直接撤掉即可,两层动画不会叠加。
+         标记由博客端 Layout.astro 的 setupLandingTransition 写入。 */
+      (function () {
+        var style = null;
+        var revealTimer = 0;
+        var teardown = function () {
+          if (revealTimer) { clearTimeout(revealTimer); revealTimer = 0; }
+          if (style) { style.remove(); style = null; }
+          document.documentElement.classList.remove("blog-arriving", "blog-reveal");
+        };
+        try {
+          /* 只有博客来路才整屏遮罩(明→暗切换):先纯黑,再 600ms 渐开。
+             主站落地页来路不放假遮罩:两页导航一致、同为纯黑底,
+             子页自己的 dk-load/dk-reveal 入场就是"导航不动、只过渡正文"。
+             landing-transition 是写给博客的标记,这里只消费不使用。 */
+          var bt = JSON.parse(sessionStorage.getItem("blog-transition") || "null");
+          sessionStorage.removeItem("blog-transition");
+          sessionStorage.removeItem("landing-transition");
+          if (
+            bt && Date.now() - bt.t <= 3000 &&
+            !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ) {
+            style = document.createElement("style");
+            style.textContent =
+              "html.blog-arriving::after{content:'';position:fixed;inset:0;z-index:99999;pointer-events:none;" +
+              "opacity:1;transition:opacity 600ms ease;background:#000}" +
+              "html.blog-arriving.blog-reveal::after{opacity:0}";
+            document.head.appendChild(style);
+            document.documentElement.classList.add("blog-arriving");
+
+            var reveal = function () {
+              requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                  if (!style) return;
+                  document.documentElement.classList.add("blog-reveal");
+                });
+              });
+              revealTimer = setTimeout(teardown, 1000);
+            };
+            if (document.readyState === "loading") {
+              document.addEventListener("DOMContentLoaded", reveal);
+            } else {
+              reveal();
+            }
+          }
+        } catch (e) { /* 忽略 sessionStorage 异常 */ }
+        window.addEventListener("pagereveal", function (e) {
+          if (e.viewTransition) {
+            document.documentElement.classList.add("vt-taken");
+            if (style) teardown();
+          }
+        });
+      })();
+    </script><title>简介 - 守岸人专栏</title><meta name="description" content="守岸人专栏——黑海岸的守护者「第二实例」：角色档案、人物介绍、经典语录与图鉴。"><link rel="icon" href="/favicon/favicon.ico"><link rel="preload" href="/landing/fonts/lxgw-wenkai-screen.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/landing/style.css?v=20261101-4"><link rel="stylesheet" href="/landing/sk.css?v=20261101-4"><script type="module" src="/_astro/page.BpImQfZc.js"></script></head> <body>  <main class="sk-page"> <nav class="dk-nav" aria-label="站点导航"> <a class="dk-nav-brand" href="/" data-no-swup> <svg width="1em" height="1em" viewBox="0 0 24 24" class="dk-nav-brand-icon" aria-hidden="true" data-icon="material-symbols:home-outline-rounded">   <symbol id="ai:material-symbols:home-outline-rounded"><path fill="currentColor" d="M6 19h3v-5q0-.425.288-.712T10 13h4q.425 0 .713.288T15 14v5h3v-9l-6-4.5L6 10zm-2 0v-9q0-.475.213-.9t.587-.7l6-4.5q.525-.4 1.2-.4t1.2.4l6 4.5q.375.275.588.7T20 10v9q0 .825-.588 1.413T18 21h-4q-.425 0-.712-.288T13 20v-5h-2v5q0 .425-.288.713T10 21H6q-.825 0-1.412-.587T4 19m8-6.75"/></symbol><use href="#ai:material-symbols:home-outline-rounded"></use>  </svg> <span>沐沐小站</span> </a> <div class="dk-nav-links"> <a href="/shorekeeper/intro/" class="dk-nav-link is-active" data-no-swup> 简介 </a><a href="/shorekeeper/skills/" class="dk-nav-link" data-no-swup> 技能详情 </a><a href="/shorekeeper/profile/" class="dk-nav-link" data-no-swup> 档案 </a><a href="/shorekeeper/history/" class="dk-nav-link" data-no-swup> 经历 </a><a href="/shorekeeper/gallery/" class="dk-nav-link" data-no-swup> 画廊 </a><a href="/shorekeeper/timeline/" class="dk-nav-link" data-no-swup> 时间线 </a> </div> </nav> <header class="sk-page-head"> <h1 class="sk-section-title">简介</h1> </header> <div class="sk-content"> <section class="sk-section dk-reveal"> <div class="sk-card sk-intro"> <p> <strong>黑海岸的守护者。</strong> 守岸人，神秘清冷、超然物外。她平日隐于幕后，只有在黑海岸最危急的时刻才会站出来。作为「第二实例」，她的身体由高纯度回音能量晶体构成，拥有操控星云的力量——这种程度的说明，对她便已足够。 </p><p> <strong>异能力「叙响织构」。</strong> 回音更迭，一如机杼上的丝线，她引导它们缀连，织构出全新的境界。解析、完形、推演……「蝴蝶」的每一次翩跹，都是对生命延续的渴望，也是她守护的证明。 </p><p> <strong>从工具到「人」。</strong> 她生而没有感情，因职责而存在；但在守护泰缇斯系统与黑海岸的漫长岁月里，情感与渴望逐渐萌生。至于渴望、羁绊、情感……除职责外她所拥有的一切，都丰满于与你相遇之后。 </p><p> <strong>与你相连。</strong> 在属于你们的故事里，她说自己是「你漂泊之后停驻的海岸」。星海尽头，她会一直等下去。 </p> </div> </section> <section class="sk-section dk-reveal" style="padding-top:0"> <h3 class="sk-sub-title">相关成就</h3> <div class="sk-entry-grid"> <div class="sk-entry"> <div class="sk-entry-title"> 蝴蝶终越沧海 <small>V1.3</small> </div> <p class="sk-entry-desc">第一次进入黑海岸区域。</p> </div><div class="sk-entry"> <div class="sk-entry-title"> One Last Ocean <small>V1.3</small> </div> <p class="sk-entry-desc">完成「行至海岸尽头」。</p> </div><div class="sk-entry"> <div class="sk-entry-title"> 独属于我的蒙娜丽莎 <small>V1.3</small> </div> <p class="sk-entry-desc">在「漂泊的终点」里奏响钢琴曲。</p> </div><div class="sk-entry"> <div class="sk-entry-title"> 夜晚的蝴蝶不会起舞 <small>V1.3</small> </div> <p class="sk-entry-desc">使用 100 次守岸人的延奏技能。</p> </div><div class="sk-entry"> <div class="sk-entry-title"> 花海亦有岸 <small>V2.0</small> </div> <p class="sk-entry-desc">发现曾与守岸人一同经过的花海。</p> </div><div class="sk-entry"> <div class="sk-entry-title"> 昔年珍馐 <small>V3.5</small> </div> <p class="sk-entry-desc">听守岸人讲述「厨仙菜」的传承。</p> </div> </div> </section> <section class="sk-section dk-reveal" style="padding-top:0"> <h3 class="sk-sub-title">经典语录</h3> <ul class="sk-quotes"> <li>守岸人，这个称呼就很好。它表示，某种因你而有的意义和决心。</li><li>这个名字，足够契合我的存在。我的意义，只因你而成立。</li><li>此岸是我存在的证明。星海尽头，我会等你。</li><li>我希望在属于我们的故事里，我可以是你漂泊之后停驻的海岸。</li> </ul> </section> </div> </main>  <footer class="sk-footer"> <p class="sk-footer-note">
+资料整理自公开资料与
+<a href="https://wuwa.huijiwiki.com/" target="_blank" rel="noopener noreferrer">灰机wiki</a>（CC BY-NC-SA 4.0）
+          · 图片版权归
+<a href="https://www.kurogame.com/" target="_blank" rel="noopener noreferrer">库洛游戏</a>
+所有
+</p> <div class="dk-footer dk-footer--full"> <div class="dk-footer-line">
+© 2026 沐沐小站. All Rights Reserved. /
+<a href="/rss.xml" target="_blank" rel="noreferrer">
+RSS
+</a>
+/
+<a href="/sitemap-index.xml" target="_blank" rel="noreferrer">
+Sitemap
+</a> </div> <div class="dk-footer-line"> <a href="https://beian.mps.gov.cn/#/query/webSearch?code=33011302001366" target="_blank" rel="noreferrer" class="dk-footer-beian"> <img src="/beian-gongan.png" alt="" width="16" height="16" loading="lazy">
+浙公网安备33011302001366号
+</a> <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer">
+浙ICP备2021022005号
+</a> </div> <div class="dk-footer-line">
+Powered by <a href="https://astro.build" target="_blank" rel="noreferrer">Astro</a> &
+<a href="https://github.com/saicaca/fuwari" target="_blank" rel="noreferrer">Fuwari</a>
+·
+<a class="dk-footer-flavor" href="https://baike.baidu.com/item/%E5%AE%88%E5%B2%B8%E4%BA%BA/64754105" target="_blank" rel="noreferrer">
+守岸人
+</a>
+For
+<a class="dk-footer-flavor" href="https://baike.baidu.com/item/%E6%BC%82%E6%B3%8A%E8%80%85/61295829" target="_blank" rel="noreferrer">
+漂泊者
+</a>
+· <span class="dk-footer-version">Version 0.0.34</span> </div> </div> </footer> <script src="/landing/galaxy.js?v=20261101-3"></script> <script src="/landing/leave-transition.js?v=20261101-3"></script> <script>
+      (function () {
+        var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        var canvases = document.querySelectorAll(".sk-hero-background canvas");
+        if (!reduceMotion && window.stellar && window.stellar.galaxy) {
+          window.stellar.galaxy.mountAll(canvases);
+        }
+      })();
+    </script> <script>
+      /* 滚动显现:进入视口的 .dk-reveal 加 is-in(样式见 landing/style.css) */
+      (function () {
+        var els = Array.prototype.slice.call(document.querySelectorAll(".dk-reveal"));
+        if (!els.length) return;
+        if (!("IntersectionObserver" in window)) {
+          els.forEach(function (el) { el.classList.add("is-in"); });
+          return;
+        }
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-in");
+              io.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.08, rootMargin: "0px 0px -40px 0px" });
+        els.forEach(function (el) { io.observe(el); });
+      })();
+    </script> </body> </html>

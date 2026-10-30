@@ -1,0 +1,114 @@
+<!DOCTYPE html><html lang="zh-CN" class="landing-page" style="background:#000"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#05060d"><meta name="view-transition" content="same-origin"><script>
+      /* 从博客返回时:以博客当时的背景色/渐变作为首屏遮罩,再渐隐到深色落地页。
+         遮罩在 head 同步放(首帧前),保证无 VT 环境零闪烁;跨文档 View Transition
+         是否激活要等首帧前的 pagereveal 才见分晓——若 e.viewTransition 非空,
+         说明原生过渡已接管,此时遮罩还未绘制过,直接撤掉即可,两层动画不会叠加。
+         标记由博客端 Layout.astro 的 setupLandingTransition 写入。 */
+      (function () {
+        var style = null;
+        var revealTimer = 0;
+        var teardown = function () {
+          if (revealTimer) { clearTimeout(revealTimer); revealTimer = 0; }
+          if (style) { style.remove(); style = null; }
+          document.documentElement.classList.remove("blog-arriving", "blog-reveal");
+        };
+        try {
+          /* 只有博客来路才整屏遮罩(明→暗切换):先纯黑,再 600ms 渐开。
+             主站落地页来路不放假遮罩:两页导航一致、同为纯黑底,
+             子页自己的 dk-load/dk-reveal 入场就是"导航不动、只过渡正文"。
+             landing-transition 是写给博客的标记,这里只消费不使用。 */
+          var bt = JSON.parse(sessionStorage.getItem("blog-transition") || "null");
+          sessionStorage.removeItem("blog-transition");
+          sessionStorage.removeItem("landing-transition");
+          if (
+            bt && Date.now() - bt.t <= 3000 &&
+            !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ) {
+            style = document.createElement("style");
+            style.textContent =
+              "html.blog-arriving::after{content:'';position:fixed;inset:0;z-index:99999;pointer-events:none;" +
+              "opacity:1;transition:opacity 600ms ease;background:#000}" +
+              "html.blog-arriving.blog-reveal::after{opacity:0}";
+            document.head.appendChild(style);
+            document.documentElement.classList.add("blog-arriving");
+
+            var reveal = function () {
+              requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                  if (!style) return;
+                  document.documentElement.classList.add("blog-reveal");
+                });
+              });
+              revealTimer = setTimeout(teardown, 1000);
+            };
+            if (document.readyState === "loading") {
+              document.addEventListener("DOMContentLoaded", reveal);
+            } else {
+              reveal();
+            }
+          }
+        } catch (e) { /* 忽略 sessionStorage 异常 */ }
+        window.addEventListener("pagereveal", function (e) {
+          if (e.viewTransition) {
+            document.documentElement.classList.add("vt-taken");
+            if (style) teardown();
+          }
+        });
+      })();
+    </script><title>档案 - 守岸人专栏</title><meta name="description" content="守岸人专栏——黑海岸的守护者「第二实例」：角色档案、人物介绍、经典语录与图鉴。"><link rel="icon" href="/favicon/favicon.ico"><link rel="preload" href="/landing/fonts/lxgw-wenkai-screen.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/landing/style.css?v=20261101-4"><link rel="stylesheet" href="/landing/sk.css?v=20261101-4"><script type="module" src="/_astro/page.BpImQfZc.js"></script></head> <body>  <main class="sk-page"> <nav class="dk-nav" aria-label="站点导航"> <a class="dk-nav-brand" href="/" data-no-swup> <svg width="1em" height="1em" viewBox="0 0 24 24" class="dk-nav-brand-icon" aria-hidden="true" data-icon="material-symbols:home-outline-rounded">   <symbol id="ai:material-symbols:home-outline-rounded"><path fill="currentColor" d="M6 19h3v-5q0-.425.288-.712T10 13h4q.425 0 .713.288T15 14v5h3v-9l-6-4.5L6 10zm-2 0v-9q0-.475.213-.9t.587-.7l6-4.5q.525-.4 1.2-.4t1.2.4l6 4.5q.375.275.588.7T20 10v9q0 .825-.588 1.413T18 21h-4q-.425 0-.712-.288T13 20v-5h-2v5q0 .425-.288.713T10 21H6q-.825 0-1.412-.587T4 19m8-6.75"/></symbol><use href="#ai:material-symbols:home-outline-rounded"></use>  </svg> <span>沐沐小站</span> </a> <div class="dk-nav-links"> <a href="/shorekeeper/intro/" class="dk-nav-link" data-no-swup> 简介 </a><a href="/shorekeeper/skills/" class="dk-nav-link" data-no-swup> 技能详情 </a><a href="/shorekeeper/profile/" class="dk-nav-link is-active" data-no-swup> 档案 </a><a href="/shorekeeper/history/" class="dk-nav-link" data-no-swup> 经历 </a><a href="/shorekeeper/gallery/" class="dk-nav-link" data-no-swup> 画廊 </a><a href="/shorekeeper/timeline/" class="dk-nav-link" data-no-swup> 时间线 </a> </div> </nav> <header class="sk-page-head"> <h1 class="sk-section-title">档案</h1> </header> <div class="sk-content"> <section class="sk-section dk-reveal"> <h3 class="sk-sub-title">基础资料</h3> <div class="sk-card"> <dl class="sk-profile-grid"> <div class="sk-profile-item"> <dt>代号</dt> <dd>守岸人 · THE SHOREKEEPER</dd> </div><div class="sk-profile-item"> <dt>外文名</dt> <dd>The Shorekeeper / ショアキーパー / 파수인</dd> </div><div class="sk-profile-item"> <dt>别称</dt> <dd>「第二实例」</dd> </div><div class="sk-profile-item"> <dt>属性</dt> <dd>衍射</dd> </div><div class="sk-profile-item"> <dt>武器</dt> <dd>音感仪</dd> </div><div class="sk-profile-item"> <dt>所属</dt> <dd>黑海岸</dd> </div><div class="sk-profile-item"> <dt>身份</dt> <dd>黑海岸领导者背后的人</dd> </div><div class="sk-profile-item"> <dt>共鸣能力</dt> <dd>叙响织构</dd> </div><div class="sk-profile-item"> <dt>定位</dt> <dd>生存治疗 · 牵引 · 伤害加深</dd> </div><div class="sk-profile-item"> <dt>生日</dt> <dd>2 月 27 日</dd> </div><div class="sk-profile-item"> <dt>身高</dt> <dd>170cm</dd> </div><div class="sk-profile-item"> <dt>常驻位置</dt> <dd>黑海岸花房钢琴前</dd> </div><div class="sk-profile-item"> <dt>特色料理</dt> <dd>雪烩浓汤</dd> </div><div class="sk-profile-item"> <dt>配音</dt> <dd>唐雅菁（汉）· 诹访彩花（日）· Stephanie McKeon（英）· 김보나（韩）</dd> </div><div class="sk-profile-item"> <dt>唤取标题</dt> <dd>「直至海水褪色」</dd> </div><div class="sk-profile-item"> <dt>满链称号</dt> <dd>「漫步于星海」</dd> </div><div class="sk-profile-item"> <dt>实装</dt> <dd>V1.3「直至海水褪色」 · 2024-09-29</dd> </div> </dl> </div> </section> <section class="sk-section dk-reveal" style="padding-top:0"> <h3 class="sk-sub-title">鉴定报告</h3> <div class="sk-card"> <div class="sk-entry-list"> <div class="sk-entry"> <div class="sk-entry-title">频谱检验报告 · A.A-000</div> <p class="sk-entry-desc">第二实例即守岸人，由高纯度回音能量晶体构成，仿照「耀变体」设置模组锚点，实现能量实体化并预置智识。使用能力时胸口晶体发出淡蓝流光，能量循环类似恒星演化，常伴随蝴蝶星云与星图领域的视觉表征。</p> </div><div class="sk-entry"> <div class="sk-entry-title">超频诊断报告 · A.A-311</div> <p class="sk-entry-desc">体内回音能量曾多次溃散、晶体碎裂脱落，推测源于解析悲鸣数据流的损耗。她会以新晶体替换受损部分——肩臂与小腿的弦状波痕，即是愈合的裂口。</p> </div> </div> </div> </section><section class="sk-section dk-reveal" style="padding-top:0"> <h3 class="sk-sub-title">珍贵之物</h3> <div class="sk-card"> <div class="sk-entry-list"> <div class="sk-entry"> <div class="sk-entry-title">陨坏死星</div> <p class="sk-entry-desc">从她体内脱出的耗尽晶体。如同忒修斯之船——割舍部分的自己，以换取另一部分的延续。</p> </div><div class="sk-entry"> <div class="sk-entry-title">周期时计</div> <p class="sk-entry-desc">漂泊者仿沙漏所赠的计时装置，能量介质以 42 天为周期回旋，对应泰缇斯一次完形、推演的标准周期，为漫长守望提供慰藉。</p> </div><div class="sk-entry"> <div class="sk-entry-title">「我们」</div> <p class="sk-entry-desc">附回音能量的唱片，近乎无限存储，收录星球上全部声音——风雨雷雪、鸟鸣鲸歌、五十余种语言的字句。最末段，是她与漂泊者的合奏，内容会持续更新。</p> </div> </div> </div> </section><section class="sk-section dk-reveal" style="padding-top:0"> <h3 class="sk-sub-title">角色故事</h3> <div class="sk-card"> <div class="sk-entry-list"> <div class="sk-entry"> <div class="sk-entry-title">最初的守岸人</div> <p class="sk-entry-desc">前世之人以「锚点」聚合回音能量成茧状晶体，被漂泊者（调律者）唤醒后以少女之姿显现——那时的她自称「因你而被制造出的工具」。</p> </div><div class="sk-entry"> <div class="sk-entry-title">比活着更重要的</div> <p class="sk-entry-desc">她试图归纳人类却屡屡被颠覆；随调律者下乡时直观目睹悲鸣中的众生。调律者告诉她「可以选择的自由，远比答案更重要」，并邀她视自己为同伴。</p> </div><div class="sk-entry"> <div class="sk-entry-title">比等待更漫长的</div> <p class="sk-entry-desc">与德罗涅的相识和诀别——当年她为少女破例申请考核资格，十多年后亲手送别临终的她，并将逝者的频率化作地下数据星河中的「星星」。</p> </div><div class="sk-entry"> <div class="sk-entry-title">始于漫响回环</div> <p class="sk-entry-desc">调律者舍弃记忆外出漂泊，她留守黑海岸接手权限，作为介质亲历一切悲鸣数据而濒临碎裂——最终因「我是守岸人」的自我觉醒，挣脱数据海。</p> </div><div class="sk-entry"> <div class="sk-entry-title">最后的守岸人</div> <p class="sk-entry-desc">与失忆归来的漂泊者重逢，共同矫正泰缇斯。她宣布名字的新含义——守望着漂泊之人的人，并为两人曾经的合奏创作了新曲。</p> </div> </div> </div> </section> </div> </main>  <footer class="sk-footer"> <p class="sk-footer-note">
+资料整理自公开资料与
+<a href="https://wuwa.huijiwiki.com/" target="_blank" rel="noopener noreferrer">灰机wiki</a>（CC BY-NC-SA 4.0）
+          · 图片版权归
+<a href="https://www.kurogame.com/" target="_blank" rel="noopener noreferrer">库洛游戏</a>
+所有
+</p> <div class="dk-footer dk-footer--full"> <div class="dk-footer-line">
+© 2026 沐沐小站. All Rights Reserved. /
+<a href="/rss.xml" target="_blank" rel="noreferrer">
+RSS
+</a>
+/
+<a href="/sitemap-index.xml" target="_blank" rel="noreferrer">
+Sitemap
+</a> </div> <div class="dk-footer-line"> <a href="https://beian.mps.gov.cn/#/query/webSearch?code=33011302001366" target="_blank" rel="noreferrer" class="dk-footer-beian"> <img src="/beian-gongan.png" alt="" width="16" height="16" loading="lazy">
+浙公网安备33011302001366号
+</a> <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer">
+浙ICP备2021022005号
+</a> </div> <div class="dk-footer-line">
+Powered by <a href="https://astro.build" target="_blank" rel="noreferrer">Astro</a> &
+<a href="https://github.com/saicaca/fuwari" target="_blank" rel="noreferrer">Fuwari</a>
+·
+<a class="dk-footer-flavor" href="https://baike.baidu.com/item/%E5%AE%88%E5%B2%B8%E4%BA%BA/64754105" target="_blank" rel="noreferrer">
+守岸人
+</a>
+For
+<a class="dk-footer-flavor" href="https://baike.baidu.com/item/%E6%BC%82%E6%B3%8A%E8%80%85/61295829" target="_blank" rel="noreferrer">
+漂泊者
+</a>
+· <span class="dk-footer-version">Version 0.0.34</span> </div> </div> </footer> <script src="/landing/galaxy.js?v=20261101-3"></script> <script src="/landing/leave-transition.js?v=20261101-3"></script> <script>
+      (function () {
+        var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        var canvases = document.querySelectorAll(".sk-hero-background canvas");
+        if (!reduceMotion && window.stellar && window.stellar.galaxy) {
+          window.stellar.galaxy.mountAll(canvases);
+        }
+      })();
+    </script> <script>
+      /* 滚动显现:进入视口的 .dk-reveal 加 is-in(样式见 landing/style.css) */
+      (function () {
+        var els = Array.prototype.slice.call(document.querySelectorAll(".dk-reveal"));
+        if (!els.length) return;
+        if (!("IntersectionObserver" in window)) {
+          els.forEach(function (el) { el.classList.add("is-in"); });
+          return;
+        }
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-in");
+              io.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.08, rootMargin: "0px 0px -40px 0px" });
+        els.forEach(function (el) { io.observe(el); });
+      })();
+    </script> </body> </html>
