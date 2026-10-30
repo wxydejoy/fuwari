@@ -1,0 +1,52 @@
+---
+import SiteNav from "../../components/SiteNav.astro";
+import SkLayout from "../../layouts/SkLayout.astro";
+import { columnNav, introParagraphs, achievements, quotes } from "../../data/shorekeeper";
+---
+
+<SkLayout title="简介 - 守岸人专栏">
+  <main class="sk-page">
+    <SiteNav current={Astro.url.pathname} links={columnNav} class="dk-load" />
+
+    <header class="sk-page-head">
+      <h1 class="sk-section-title">简介</h1>
+    </header>
+
+    <div class="sk-content">
+      <section class="sk-section dk-reveal">
+        <div class="sk-card sk-intro">
+          {introParagraphs.map((p) => (
+            <p>
+              <strong>{p.strong}</strong>
+              {p.text}
+            </p>
+          ))}
+        </div>
+      </section>
+
+      <section class="sk-section dk-reveal" style="padding-top:0">
+        <h3 class="sk-sub-title">相关成就</h3>
+        <div class="sk-entry-grid">
+          {achievements.map((a) => (
+            <div class="sk-entry">
+              <div class="sk-entry-title">
+                {a.name}
+                <small>V{a.version}</small>
+              </div>
+              <p class="sk-entry-desc">{a.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section class="sk-section dk-reveal" style="padding-top:0">
+        <h3 class="sk-sub-title">经典语录</h3>
+        <ul class="sk-quotes">
+          {quotes.map((quote) => (
+            <li>{quote}</li>
+          ))}
+        </ul>
+      </section>
+    </div>
+  </main>
+</SkLayout>

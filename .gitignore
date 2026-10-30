@@ -36,6 +36,16 @@ yarn.lock
 # trae
 .trae/
 
+# workbuddy / zcode local data
+.workbuddy/
+.zcode/
+
+# scratch drafts
+tk.html
+tk.html.txt
+up.html
+up.html.txt
+
 src/content/posts/
 
 # image cache (optional, can be committed for CI builds)

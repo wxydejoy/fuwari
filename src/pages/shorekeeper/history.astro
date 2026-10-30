@@ -1,0 +1,35 @@
+---
+import SiteNav from "../../components/SiteNav.astro";
+import SkLayout from "../../layouts/SkLayout.astro";
+import { columnNav, storyChapters } from "../../data/shorekeeper";
+---
+
+<SkLayout title="经历 - 守岸人专栏">
+  <main class="sk-page">
+    <SiteNav current={Astro.url.pathname} links={columnNav} class="dk-load" />
+
+    <header class="sk-page-head">
+      <h1 class="sk-section-title">经历</h1>
+      <p class="sk-page-lede">从「因你而被制造出的工具」，到守望着漂泊之人的人——她走过漫长的岁月，也走过每一片与她相连的海岸。</p>
+    </header>
+
+    <div class="sk-content">
+      <section class="sk-section dk-reveal">
+        <h3 class="sk-sub-title">剧情经历</h3>
+        <div class="sk-card">
+          <ol class="sk-entry-list sk-story-list">
+            {storyChapters.map((chapter, i) => (
+              <li class="sk-entry">
+                <div class="sk-entry-title">
+                  <span class="sk-story-index">{String(i + 1).padStart(2, "0")}</span>
+                  {chapter.title}
+                </div>
+                <p class="sk-entry-desc">{chapter.desc}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+    </div>
+  </main>
+</SkLayout>

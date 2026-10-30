@@ -1,0 +1,73 @@
+---
+import { siteConfig } from "../../config";
+import { url } from "../../utils/url-utils";
+import SiteNav from "../../components/SiteNav.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
+import SkLayout from "../../layouts/SkLayout.astro";
+import { columnNav } from "../../data/shorekeeper";
+
+const pageTitle = `守岸人专栏 - ${siteConfig.title}`;
+---
+
+<SkLayout title={pageTitle} showFooter={false}>
+  <main>
+    <div class="sk-hero">
+      <div class="sk-hero-background" aria-hidden="true">
+        <canvas
+          data-galaxy-params='{"starSpeed":0.3,"speed":0.09,"rotationSpeed":0.016,"hueShift":198,"density":1.5,"glowIntensity":0.24,"twinkleIntensity":0.08}'
+        ></canvas>
+      </div>
+
+      <div class="sk-hero-layout">
+        <SiteNav current={Astro.url.pathname} links={columnNav} class="dk-load" />
+
+        <div class="sk-hero-body">
+          <section class="sk-hero-stage" aria-hidden="true">
+            <div class="sk-hero-figure">
+              <img
+                src="/landing/sprite-720.webp"
+                srcset="/landing/sprite-480.webp 480w, /landing/sprite-720.webp 720w, /landing/sprite-1040.webp 1040w"
+                sizes="(max-width: 768px) 90vw, 42vw"
+                width="1040"
+                height="1675"
+                alt="守岸人立绘"
+                fetchpriority="high"
+                decoding="async"
+              />
+            </div>
+          </section>
+
+          <section class="sk-hero-copy">
+            <span class="wiki-cover-release">Spectro · 衍射 · 五星</span>
+            <h1 class="sk-title">守岸人专栏</h1>
+            <p class="sk-hero-lede">
+              黑海岸的守护者，「第二实例」。她因你的唤醒而生，在漫长的守望中萌生出情感与渴望——这里收录关于她的一切。
+            </p>
+            <nav class="sk-hero-nav" aria-label="专栏内容">
+              <a href={url("/shorekeeper/intro/")} data-no-swup>简介</a>
+              <a href={url("/shorekeeper/skills/")} data-no-swup>技能详情</a>
+              <a href={url("/shorekeeper/profile/")} data-no-swup>档案</a>
+              <a href={url("/shorekeeper/history/")} data-no-swup>经历</a>
+              <a href={url("/shorekeeper/gallery/")} data-no-swup>画廊</a>
+            </nav>
+          </section>
+        </div>
+
+        <footer class="sk-hero-foot">
+          <nav class="sk-hero-foot-links" aria-label="页脚导航">
+            <a href={url("/")} data-no-swup>回到首页</a>
+            <a href={url("/blog/")} data-no-swup>进入博客</a>
+          </nav>
+          <p class="sk-hero-foot-note">
+            资料整理自公开资料与
+            <a href="https://wuwa.huijiwiki.com/" target="_blank" rel="noopener noreferrer">灰机wiki</a>（CC BY-NC-SA 4.0）
+            · 图片版权归
+            <a href="https://www.kurogame.com/" target="_blank" rel="noopener noreferrer">库洛游戏</a>
+            所有
+          </p>
+          <SiteFooter compact />
+        </footer>
+      </div>
+    </div>
+  </main>
+</SkLayout>

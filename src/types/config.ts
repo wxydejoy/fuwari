@@ -58,6 +58,7 @@ export type NavBarLink = {
 	name: string;
 	url: string;
 	external?: boolean;
+	icon?: string; // astro-icon 名称,设置后导航栏(桌面端)只显示图标
 };
 
 export type NavBarConfig = {

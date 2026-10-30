@@ -124,7 +124,6 @@ export default defineConfig({
 				},
 			],
 			rehypeSlug,
-			rehypeExternalImages, // 处理外部图片，避免构建时优化
 			[
 				rehypeComponents,
 				{
@@ -161,6 +160,7 @@ export default defineConfig({
 					},
 				},
 			],
+			rehypeExternalImages, // 处理外部图片，避免构建时优化；放最后以保证宽高等属性不被改写
 		],
 		}),
 	},

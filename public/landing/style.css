@@ -101,7 +101,7 @@ html.landing-page a {
 .wiki-cover-layout {
   position: relative;
   z-index: 2;
-  width: min(1240px, calc(100% - 4rem));
+  width: var(--dk-column);
   height: 100%;
   margin: 0 auto;
   display: flex;
@@ -109,18 +109,215 @@ html.landing-page a {
   color: var(--text-banner);
 }
 
-.wiki-navbar {
+/* ============ 全站共享(首页/专栏): tokens + 导航/页脚 + 动效 ============ */
+/* 对齐博客设计体系: 强调色取博客 --primary 暗色值(hue 210), 圆角同 --radius-large */
+:root {
+  --dk-primary: oklch(0.75 0.14 210);
+  --dk-line: rgba(255, 255, 255, 0.12);
+  --dk-radius: 1rem;
+  /* 全站唯一内容列(与博客完全同构):容器 max 1360 居中,再内缩 1rem×2
+     → 大屏恒为 1328 宽、left=(100vw-1328)/2;窄屏退化为 100%-2rem。
+     导航、主站 hero、专栏首页 hero、子页正文/页脚一律引用此变量,
+     任意视口下三处几何逐像素一致 */
+  --dk-column: min(calc(var(--page-width, 1360px) - 2rem), calc(100% - 2rem));
+}
+
+/* 隐藏原生滚动条:与博客的 OverlayScrollbars(overlay 不占宽)对齐,
+   所有页面布局宽度恒定,页间切换导航宽度不再跳变;滚轮/键盘/触摸滚动不受影响 */
+html.landing-page {
+  scrollbar-width: none;
+}
+
+html.landing-page::-webkit-scrollbar {
+  display: none;
+}
+
+/* —— 顶栏(玻璃横条, 对应博客的 card-base 导航) —— */
+.dk-nav {
   flex: 0 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: max(1.75rem, env(safe-area-inset-top));
+  gap: 0.75rem;
+  /* 形状对齐博客导航:顶部贴边直角、底部大圆角、高度同为 4.5rem(颜色不变)。
+     横向几何与博客同构:容器 min(--page-width,100%-2rem) 居中,导航在其中
+     再限 max --page-width-2rem 居中 → 任意视口下 left/width 与博客逐像素一致 */
+  width: 100%;
+  max-width: calc(var(--page-width, 1360px) - 2rem);
+  margin: env(safe-area-inset-top) auto 0;
+  padding: 0 0.6rem 0 1.1rem;
+  min-height: 4.5rem;
+  border-radius: 0 0 var(--dk-radius) var(--dk-radius);
+  border: 1px solid color-mix(in srgb, var(--text-banner-theme) 28%, transparent);
+  background: color-mix(in srgb, var(--text-banner-theme) 10%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
-.wiki-navbar-home {
+.dk-nav-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.08em;
+  color: var(--text-banner);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.dk-nav-brand:hover {
+  color: #fff;
+}
+
+.dk-nav-brand-icon {
+  width: 1.15rem;
+  height: 1.15rem;
+  opacity: 0.75;
+}
+
+.dk-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.dk-nav-link,
+.dk-nav-icon {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.8rem;
+  border-radius: 100px;
+  border: 1px solid transparent;
+  color: var(--text-banner-theme);
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.dk-nav-icon {
+  padding: 0.35rem 0.55rem;
+}
+
+.dk-nav-icon svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.dk-nav-link:hover,
+.dk-nav-icon:hover {
+  background: color-mix(in srgb, var(--text-banner-theme) 16%, transparent);
+  color: var(--text-banner);
+}
+
+.dk-nav-link.is-active,
+.dk-nav-icon.is-active {
+  border-color: color-mix(in srgb, var(--text-banner-theme) 40%, transparent);
+  background: color-mix(in srgb, var(--text-banner-theme) 16%, transparent);
+  color: var(--text-banner);
+}
+
+/* —— 页脚(信息结构与博客 Footer 对齐) —— */
+.dk-footer {
+  flex: 0 0 auto;
+  text-align: center;
+  color: color-mix(in srgb, var(--text-banner-theme) 52%, transparent);
+  font-size: 0.78rem;
+  line-height: 1.9;
+}
+
+.dk-footer a {
+  color: color-mix(in srgb, var(--text-banner-theme) 75%, transparent);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.dk-footer a:hover {
+  color: var(--text-banner);
+}
+
+.dk-footer--compact {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.1rem 1rem;
+  padding: 0.9rem 0 0.4rem;
+}
+
+.dk-footer--full {
+  flex-basis: 100%;
+  border-top: 1px dashed var(--dk-line);
+  margin-top: 1.5rem;
+  padding-top: 1.4rem;
+}
+
+.dk-footer-line {
+  display: block;
+}
+
+.dk-footer-beian {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.dk-footer-beian img {
+  border-radius: 3px;
+}
+
+.dk-footer-version {
+  opacity: 0.7;
+}
+
+/* —— 动效: 首屏交错入场 / 滚动显现(与博客 fade-in-up 同曲线) —— */
+@media (prefers-reduced-motion: no-preference) {
+  .dk-load {
+    opacity: 0;
+    animation: dk-fade-in-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: var(--reveal-delay, 0ms);
+  }
+
+  .dk-reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  .dk-reveal.is-in {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes dk-fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* 交错档位 */
+.dk-d1 {
+  --reveal-delay: 80ms;
+}
+
+.dk-d2 {
+  --reveal-delay: 160ms;
+}
+
+.dk-d3 {
+  --reveal-delay: 260ms;
 }
 
 .wiki-cover-content {
@@ -349,7 +546,7 @@ html.landing-page a {
 
 @media screen and (max-width: 1100px) and (min-width: 901px) {
   .wiki-cover-layout {
-    width: calc(100% - 3rem);
+    width: calc(100% - 2rem);
   }
 
   .cover-title {
@@ -399,17 +596,14 @@ html.landing-page a {
     min-height: 0;
   }
 
-  .wiki-navbar {
-    width: 100%;
+  .dk-nav {
+    flex-wrap: wrap;
     justify-content: center;
     text-align: center;
   }
 
-  .wiki-navbar-home {
-    display: block;
-    width: 100%;
-    text-align: center;
-    letter-spacing: 0.12em;
+  .dk-nav-links {
+    justify-content: center;
   }
 
   .wiki-cover-content {
@@ -527,14 +721,11 @@ html.landing-page a {
 
 @media screen and (max-width: 500px) {
   .wiki-cover-layout {
-    width: calc(100% - 3rem);
+    width: calc(100% - 2rem);
   }
 
-  .wiki-navbar {
-    width: 100%;
-    justify-content: center;
-    text-align: center;
-    padding-top: 1.25rem;
+  .dk-nav {
+    margin-top: 0;
   }
 
   .wiki-cover-stage {
@@ -580,11 +771,9 @@ html.landing-page a {
 }
 
 @media screen and (orientation: portrait) {
-  .wiki-navbar,
-  .wiki-navbar-home {
-    width: 100%;
-    text-align: center;
+  .dk-nav {
     justify-content: center;
+    text-align: center;
   }
 }
 
@@ -599,24 +788,83 @@ html.landing-page a {
   }
 }
 
-@keyframes landing-vt-out {
+@keyframes landing-vt-fade-out {
   to {
     opacity: 0;
   }
 }
 
-@keyframes landing-vt-in {
+@keyframes landing-vt-fade-in {
   from {
     opacity: 0;
   }
 }
 
+/* 交叉溶解:双画面同时互溶,默认混合(plus-lighter)亮度相加、无凹陷,
+   观感与非 VT 浏览器的兜底遮罩一致;group 铺首页深色底兜住首尾帧。 */
+/* 两段式"先黑再开":旧画面快速淡出 → 黑场 → 新画面渐入,总长 600ms。 */
 ::view-transition-old(root) {
-  animation: 360ms ease both landing-vt-out;
+  animation: 250ms ease both landing-vt-fade-out;
 }
 
 ::view-transition-new(root) {
-  animation: 480ms ease both landing-vt-in;
+  animation: 350ms ease 250ms both landing-vt-fade-in;
+}
+
+::view-transition-group(root) {
+  background: #000;
+}
+
+/* 跨文档过渡只溶正文:暗色页的导航两页完全一致,单独成组保持稳定。
+   目标页没有 .dk-nav(如去博客)时旧导航立即消失,避免冻结残影;
+   新页面的导航立即就位,与遮罩方案"导航不动"的观感一致。 */
+.dk-nav {
+  view-transition-name: site-nav;
+}
+
+::view-transition-old(site-nav) {
+  animation: none;
+  opacity: 0;
+}
+
+::view-transition-new(site-nav) {
+  animation: none;
+}
+
+::view-transition-group(site-nav) {
+  /* 禁用组动画:两页导航宽度受滚动条影响略有差异,
+     默认的旧框→新框形变会让导航在页间滑动/伸缩,这里让它瞬间就位 */
+  animation: none;
+  background: #000;
+  border-radius: 0 0 var(--dk-radius) var(--dk-radius);
+}
+
+/* 博客导航(与暗色页导航长得不同)也单独成组:去博客时顶部先沉入黑场,
+   博客导航再随节奏渐入,避免两套导航互溶出毛玻璃糊。 */
+::view-transition-old(blog-nav) {
+  animation: none;
+  opacity: 0;
+}
+
+::view-transition-group(blog-nav) {
+  background: #000;
+  border-radius: 0 0 var(--radius-large, 1rem) var(--radius-large, 1rem);
+}
+
+/* 跨文档 VT 的标准 opt-in:<meta name="view-transition"> 标签 Chrome 并不认,
+   必须用这条 CSS 规则,否则原生交叉溶解永远不会激活、全靠兜底遮罩。 */
+@view-transition {
+  navigation: auto;
+}
+
+/* 原生 VT 接管时跳过入场动画:溶解画面直接是最终内容,
+   避免"溶解到空页面、再播一遍入场"的二次动画。 */
+html.vt-taken .dk-load,
+html.vt-taken .dk-reveal {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

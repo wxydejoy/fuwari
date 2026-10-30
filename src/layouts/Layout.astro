@@ -19,6 +19,7 @@ import {
 import { defaultFavicons } from "../constants/icon";
 import type { Favicon } from "../types/config";
 import { pathsEqual, url } from "../utils/url-utils";
+// KaTeX 全站引入：压缩后仅 2.8KB，按需加载带来的构建复杂度不划算
 import "katex/dist/katex.css";
 
 interface Props {
@@ -49,6 +50,15 @@ if (!banner || typeof banner !== "string" || banner.trim() === "") {
 banner = Array.isArray(siteConfig.banner.src) ? siteConfig.banner.src[0] : siteConfig.banner.src;
 
 const enableBanner = siteConfig.banner.enable;
+
+// 本地 banner 需要转成绝对地址，否则 og:image 会是相对路径
+const ogImage =
+	banner.startsWith("http") || banner.startsWith("data:")
+		? banner
+		: new URL(banner, Astro.site ?? Astro.url).href;
+
+// 本地 banner 可以预加载，让 LCP 提前开始
+const preloadBanner = enableBanner && banner.startsWith("/");
 
 let pageTitle: string;
 if (title) {
@@ -85,6 +95,59 @@ const bannerOffset =
 
 		<meta charset="UTF-8" />
 		<meta name="view-transition" content="same-origin" />
+		<script is:inline>
+			/* 从首页(深色落地页)跳转过来的兜底过渡:先盖一层同色深色遮罩再渐亮。
+			   遮罩在 head 同步放(首帧前),保证无 VT 环境零闪烁;跨文档 View Transition
+			   是否激活要等首帧前的 pagereveal 才见分晓——若 e.viewTransition 非空,
+			   说明原生过渡已接管,此时遮罩还未绘制过,直接撤掉即可,两层动画不会叠加。
+			   标记由 landing 页写入。 */
+			(function () {
+				var style = null;
+				var revealTimer = 0;
+				var teardown = function () {
+					if (revealTimer) { clearTimeout(revealTimer); revealTimer = 0; }
+					if (style) { style.remove(); style = null; }
+					document.documentElement.classList.remove("landing-arriving", "landing-reveal");
+				};
+				try {
+					var ld = JSON.parse(sessionStorage.getItem("landing-transition") || "null");
+					sessionStorage.removeItem("landing-transition");
+					if (
+						ld && ld.t && Date.now() - Number(ld.t) <= 3000 &&
+						!window.matchMedia("(prefers-reduced-motion: reduce)").matches
+					) {
+						style = document.createElement("style");
+						style.textContent =
+							"html.landing-arriving::after{content:'';position:fixed;inset:0;z-index:9999;" +
+							"background:#000;pointer-events:none;opacity:1;transition:opacity 600ms ease}" +
+							"html.landing-arriving.landing-reveal::after{opacity:0}";
+						document.head.appendChild(style);
+						document.documentElement.classList.add("landing-arriving");
+
+						var reveal = function () {
+							requestAnimationFrame(function () {
+								requestAnimationFrame(function () {
+									if (!style) return;
+									document.documentElement.classList.add("landing-reveal");
+								});
+							});
+							revealTimer = setTimeout(teardown, 1000);
+						};
+						if (document.readyState === "loading") {
+							document.addEventListener("DOMContentLoaded", reveal);
+						} else {
+							reveal();
+						}
+					}
+				} catch (e) { /* 忽略 sessionStorage 异常 */ }
+				window.addEventListener("pagereveal", function (e) {
+					if (e.viewTransition) {
+						document.documentElement.classList.add("vt-taken");
+						if (style) teardown();
+					}
+				});
+			})();
+		</script>
 		<meta name="description" content={description || pageTitle}>
 		<meta name="author" content={profileConfig.name}>
 
@@ -92,7 +155,7 @@ const bannerOffset =
 		<meta property="og:url" content={Astro.url}>
 		<meta property="og:title" content={pageTitle}>
 		<meta property="og:description" content={description || pageTitle}>
-		<meta property="og:image" content={banner}>
+		<meta property="og:image" content={ogImage}>
 		{setOGTypeArticle ? (
         <meta property="og:type" content="article" />
         ) : (
@@ -103,10 +166,16 @@ const bannerOffset =
 		<meta property="twitter:url" content={Astro.url}>
 		<meta name="twitter:title" content={pageTitle}>
 		<meta name="twitter:description" content={description || pageTitle}>
-		<meta name="twitter:image" content={banner}>
+		<meta name="twitter:image" content={ogImage}>
 
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
+		<!-- 文章图片来自图床，提前建连可省掉首图的一次 DNS + TLS -->
+		<link rel="preconnect" href="https://i.undf.cn" crossorigin />
+		<link rel="dns-prefetch" href="https://i.undf.cn" />
+		{preloadBanner && (
+			<link rel="preload" as="image" href={banner} fetchpriority="high" />
+		)}
 		{favicons.map(favicon => (
 			<link rel="icon"
 				  href={favicon.src.startsWith('/') ? url(favicon.src) : favicon.src}
@@ -222,17 +291,34 @@ const bannerOffset =
 	}
 }
 
-@keyframes landing-vt-out {
+@keyframes vt-fade-out {
 	to { opacity: 0; }
 }
-@keyframes landing-vt-in {
+@keyframes vt-fade-in {
 	from { opacity: 0; }
 }
+/* 两段式"先黑再开"(与暗色页 style.css 同节奏):旧画面 250ms 淡出,
+   黑场,新画面 350ms 渐入,总长 600ms。 */
 ::view-transition-old(root) {
-	animation: 360ms ease both landing-vt-out;
+	animation: 250ms ease both vt-fade-out;
 }
 ::view-transition-new(root) {
-	animation: 480ms ease both landing-vt-in;
+	animation: 350ms ease 250ms both vt-fade-in;
+}
+::view-transition-group(root) {
+	background: #000;
+}
+/* 博客导航单独成组:从暗色页回来时顶部同样先黑,导航随新画面渐入。 */
+#navbar {
+	view-transition-name: blog-nav;
+}
+::view-transition-new(blog-nav) {
+	animation: 350ms ease 250ms both vt-fade-in;
+}
+::view-transition-group(blog-nav) {
+	animation: none;
+	background: #000;
+	border-radius: 0 0 var(--radius-large) var(--radius-large);
 }
 @media (prefers-reduced-motion: reduce) {
 	::view-transition-group(*),
@@ -240,6 +326,17 @@ const bannerOffset =
 	::view-transition-new(*) {
 		animation: none !important;
 	}
+}
+/* 跨文档 VT 的标准 opt-in:<meta name="view-transition"> 标签 Chrome 并不认,
+   必须用这条 CSS 规则,否则原生交叉溶解永远不会激活。 */
+@view-transition {
+	navigation: auto;
+}
+/* 原生 VT 接管时跳过博客自身的入场动画,交给 1200ms 交叉溶解。 */
+html.vt-taken .onload-animation {
+	animation: none !important;
+	opacity: 1 !important;
+	transform: none !important;
 }
 </style>
 
@@ -399,6 +496,34 @@ function showBanner() {
 
 	banner.classList.remove('opacity-0', 'scale-105');
 }
+
+/* 返回首页(深色落地页)时的数据传递:把当前背景色/渐变写入 sessionStorage,
+   供落地页做兜底遮罩。pageswap 在导航提交时触发,标记最准;不支持的内核才用点击兜底,
+   且要过滤中键/修饰键点击(新标签页打开,当前页留下的标记就是脏数据)。 */
+function setupLandingTransition() {
+	const writeFlag = () => {
+		try {
+			if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+			const cs = getComputedStyle(document.documentElement);
+			const bg = cs.backgroundImage !== 'none' ? cs.backgroundImage : cs.backgroundColor;
+			sessionStorage.setItem('blog-transition', JSON.stringify({ t: Date.now(), bg }));
+		} catch (e) { /* 忽略 sessionStorage 异常 */ }
+	};
+	if ('onpageswap' in window) {
+		window.addEventListener('pageswap', writeFlag);
+		return;
+	}
+	const onClick = (e) => {
+		if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+		const link = e.currentTarget;
+		if (link.target && link.target !== '_self') return;
+		writeFlag();
+	};
+	document.querySelectorAll('a[data-no-swup]').forEach(link => {
+		link.addEventListener('click', onClick);
+	});
+}
+setupLandingTransition();
 
 function init() {
 	const restoreTransition = disableTransition();

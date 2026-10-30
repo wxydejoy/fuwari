@@ -1,0 +1,58 @@
+{
+	"headers": [
+		{
+			"source": "/_astro/*",
+			"headers": [
+				{
+					"key": "Cache-Control",
+					"value": "public, max-age=31536000, immutable"
+				}
+			]
+		},
+		{
+			"source": "/banner/*",
+			"headers": [
+				{
+					"key": "Cache-Control",
+					"value": "public, max-age=604800"
+				}
+			]
+		},
+		{
+			"source": "/landing/*",
+			"headers": [
+				{
+					"key": "Cache-Control",
+					"value": "public, max-age=604800"
+				}
+			]
+		},
+		{
+			"source": "/favicon/*",
+			"headers": [
+				{
+					"key": "Cache-Control",
+					"value": "public, max-age=604800"
+				}
+			]
+		}
+	],
+	"caches": [
+		{
+			"source": "/_astro/*",
+			"cacheTtl": 31536000
+		},
+		{
+			"source": "/banner/*",
+			"cacheTtl": 604800
+		},
+		{
+			"source": "/landing/*",
+			"cacheTtl": 604800
+		},
+		{
+			"source": "/favicon/*",
+			"cacheTtl": 604800
+		}
+	]
+}

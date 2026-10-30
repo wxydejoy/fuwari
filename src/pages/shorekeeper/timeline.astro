@@ -1,0 +1,107 @@
+---
+import SiteNav from "../../components/SiteNav.astro";
+import SkLayout from "../../layouts/SkLayout.astro";
+import { columnNav, collabTimeline } from "../../data/shorekeeper";
+---
+
+<SkLayout title="时间线 - 守岸人专栏">
+  <main class="sk-page">
+    <SiteNav current={Astro.url.pathname} links={columnNav} class="dk-load" />
+
+    <header class="sk-page-head">
+      <h1 class="sk-section-title">时间线</h1>
+      <p class="sk-page-lede">从 1.3 实装到二周年巡演——每一次联动、每一张贺图，按时间排成一条海岸线。</p>
+    </header>
+
+    <div class="sk-content">
+      <section class="sk-section is-wide dk-reveal">
+        <ol class="sk-timeline">
+          {collabTimeline.map((shot, i) => (
+            <li class="sk-tl-item" id={`tl-${i + 1}`}>
+              <span class="sk-tl-date">{shot.date}</span>
+              <button
+                class="sk-shot-btn sk-tl-thumb"
+                type="button"
+                data-lb={shot.src}
+                data-lb-caption={shot.desc ? `${shot.date} · ${shot.title} · ${shot.desc}` : `${shot.date} · ${shot.title}`}
+              >
+                <img
+                  src={shot.src}
+                  width={shot.width}
+                  height={shot.height}
+                  alt={shot.alt}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </button>
+              <div class="sk-tl-body">
+                <h4 class="sk-tl-title">{shot.title}</h4>
+                {shot.desc && <p class="sk-tl-desc">{shot.desc}</p>}
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+    </div>
+  </main>
+
+  <div class="sk-lightbox" id="sk-lightbox" role="dialog" aria-modal="true" aria-label="图片预览">
+    <button class="sk-lightbox-close" type="button" aria-label="关闭">×</button>
+    <button class="sk-lightbox-prev" type="button" aria-label="上一张">‹</button>
+    <img src="" alt="" />
+    <button class="sk-lightbox-next" type="button" aria-label="下一张">›</button>
+    <div class="sk-lightbox-caption"></div>
+  </div>
+</SkLayout>
+
+<script is:inline>
+  (function () {
+    var box = document.getElementById("sk-lightbox");
+    if (!box) return;
+    var img = box.querySelector("img");
+    var caption = box.querySelector(".sk-lightbox-caption");
+    var triggers = Array.prototype.slice.call(document.querySelectorAll("[data-lb]"));
+    var current = -1;
+
+    function show(src, text) {
+      img.src = src;
+      img.alt = text || "";
+      caption.textContent = text || "";
+    }
+
+    function step(dir) {
+      if (!triggers.length) return;
+      current = (current + dir + triggers.length) % triggers.length;
+      var t = triggers[current];
+      show(t.getAttribute("data-lb"), t.getAttribute("data-lb-caption"));
+    }
+
+    triggers.forEach(function (t) {
+      t.addEventListener("click", function () {
+        current = triggers.indexOf(t);
+        show(t.getAttribute("data-lb"), t.getAttribute("data-lb-caption"));
+        box.classList.add("open");
+      });
+    });
+    box.querySelector(".sk-lightbox-close").addEventListener("click", function () {
+      box.classList.remove("open");
+      img.src = "";
+    });
+    box.querySelector(".sk-lightbox-prev").addEventListener("click", function () { step(-1); });
+    box.querySelector(".sk-lightbox-next").addEventListener("click", function () { step(1); });
+    box.addEventListener("click", function (e) {
+      if (e.target === box) {
+        box.classList.remove("open");
+        img.src = "";
+      }
+    });
+    document.addEventListener("keydown", function (e) {
+      if (!box.classList.contains("open")) return;
+      if (e.key === "Escape") {
+        box.classList.remove("open");
+        img.src = "";
+      } else if (e.key === "ArrowLeft") step(-1);
+      else if (e.key === "ArrowRight") step(1);
+    });
+  })();
+</script>

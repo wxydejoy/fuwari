@@ -18,7 +18,7 @@ export const siteConfig: SiteConfig = {
 	banner: {
 		enable: true,
 		src: [
-			"https://i.undf.cn/file/ob/616b27741d92418019d973e0e79add48.png",
+			"/banner/hero-1920.webp",
 		], // Support multiple images for carousel
 		position: "center", // Equivalent to object-position, only supports "top", "center", "bottom". "center" by default
 		credit: {
@@ -65,6 +65,7 @@ export const navBarConfig: NavBarConfig = {
 			name: "GitHub",
 			url: "https://github.com/wxydejoy", // Internal links should not include the base path, as it is automatically added
 			external: true, // Show an external link icon and will open in a new tab
+			icon: "fa6-brands:github", // 桌面端导航栏只显示 GitHub 图标
 		},
 	],
 };

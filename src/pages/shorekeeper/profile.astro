@@ -1,0 +1,47 @@
+---
+import SiteNav from "../../components/SiteNav.astro";
+import SkLayout from "../../layouts/SkLayout.astro";
+import { columnNav, profile, archiveSections } from "../../data/shorekeeper";
+---
+
+<SkLayout title="档案 - 守岸人专栏">
+  <main class="sk-page">
+    <SiteNav current={Astro.url.pathname} links={columnNav} class="dk-load" />
+
+    <header class="sk-page-head">
+      <h1 class="sk-section-title">档案</h1>
+    </header>
+
+    <div class="sk-content">
+      <section class="sk-section dk-reveal">
+        <h3 class="sk-sub-title">基础资料</h3>
+        <div class="sk-card">
+          <dl class="sk-profile-grid">
+            {profile.map((item) => (
+              <div class="sk-profile-item">
+                <dt>{item.label}</dt>
+                <dd>{item.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+
+      {archiveSections.map((section) => (
+        <section class="sk-section dk-reveal" style="padding-top:0">
+          <h3 class="sk-sub-title">{section.title}</h3>
+          <div class="sk-card">
+            <div class="sk-entry-list">
+              {section.entries.map((entry) => (
+                <div class="sk-entry">
+                  <div class="sk-entry-title">{entry.title}</div>
+                  <p class="sk-entry-desc">{entry.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ))}
+    </div>
+  </main>
+</SkLayout>

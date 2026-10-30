@@ -28,6 +28,17 @@ try {
 	}
 	imageUrls = [];
 }
+
+// 图片真实尺寸（由 scripts/update-image-dims.mjs 生成），用于消除布局抖动
+type ImageDims = Record<string, { width: number; height: number }>;
+let imageDims: ImageDims = {};
+try {
+	const dimsPath = path.join(process.cwd(), "src", "data", "image-dims.json");
+	imageDims = JSON.parse(await fs.readFile(dimsPath, "utf-8")) as ImageDims;
+} catch {
+	// 尺寸表缺失时退回无尺寸渲染
+}
+const dimsOf = (u: string) => imageDims[u] ?? imageDims[u.split("?")[0]];
 ---
 <MainGridLayout title="摄影" description="我的摄影作品集，记录生活中的点滴时刻。">
     <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
@@ -59,28 +70,33 @@ try {
             
             {imageUrls.length > 0 ? (
                 <div id="photography-gallery" class="columns-1 md:columns-2 gap-4">
-                    {imageUrls.map((url, index) => (
-                        <div 
+                    {imageUrls.map((url, index) => {
+                        const dims = dimsOf(url);
+                        return (
+                        <div
                             class="photography-card break-inside-avoid mb-4 relative overflow-hidden bg-gray-200 dark:bg-gray-800 shadow-sm rounded-lg"
                             data-image-url={url}
                             data-image-index={index}
                         >
-                            <a 
-                                href={url} 
+                            <a
+                                href={url}
                                 class="block w-full h-full cursor-zoom-in photography-link"
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
-                                <img 
-                                    src={url} 
-                                    alt={`摄影作品 ${index + 1}`} 
+                                <img
+                                    src={url}
+                                    alt={`摄影作品 ${index + 1}`}
                                     class="w-full h-auto photography-image"
-                                    loading="lazy"
+                                    width={dims?.width}
+                                    height={dims?.height}
+                                    loading={index < 4 ? "eager" : "lazy"}
                                     decoding="async"
                                 />
                             </a>
                         </div>
-                    ))}
+                        );
+                    })}
                 </div>
             ) : (
                 <div class="text-center py-12 text-gray-500 dark:text-gray-400">

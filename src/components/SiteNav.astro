@@ -1,0 +1,85 @@
+---
+/**
+ * 全站暗色导航栏（首页 / 守岸人专栏共用）。
+ *
+ * 链接来源二选一：
+ * - 传入 links（如专栏的 columnNav）
+ * - 缺省用博客的 navBarConfig.links + LinkPresets 归一化（与 Navbar.astro 相同写法）
+ * 样式为 public/landing/style.css 的 .dk-nav 体系。
+ */
+import { Icon } from "astro-icon/components";
+import { navBarConfig, siteConfig } from "../config";
+import { LinkPresets } from "../constants/link-presets";
+import { LinkPreset, type NavBarLink } from "../types/config";
+import { url } from "../utils/url-utils";
+
+interface Props {
+	/** 覆盖默认导航链接（守岸人专栏页传 columnNav） */
+	links?: NavBarLink[];
+	/** 当前页路径，用于高亮匹配链接（如 "/shorekeeper/profile/"） */
+	current?: string;
+	/** 额外插入的文字链接 */
+	extra?: NavBarLink;
+	class?: string;
+}
+
+const { links: linksProp, current = "", extra, className } = Astro.props;
+
+const links: NavBarLink[] = (linksProp ?? navBarConfig.links).map(
+	(item: NavBarLink | LinkPreset): NavBarLink => {
+		if (typeof item === "number") {
+			return LinkPresets[item];
+		}
+		return item;
+	},
+);
+if (extra) {
+	links.unshift(extra);
+}
+
+/* 前缀匹配只允许两段以上的链接,避免 /shorekeeper/ 把子页的高亮也吃掉 */
+const segCount = (u: string) => u.split("/").filter(Boolean).length;
+const isActive = (l: NavBarLink) => {
+	if (l.external || l.icon || current === "/") return false;
+	const base = l.url.endsWith("/") ? l.url : `${l.url}/`;
+	if (!current.startsWith(base)) return false;
+	return current === l.url || segCount(l.url) >= 2;
+};
+---
+
+<nav class:list={["dk-nav", className]} aria-label="站点导航">
+	<a class="dk-nav-brand" href={url("/")} data-no-swup>
+		<Icon name="material-symbols:home-outline-rounded" class="dk-nav-brand-icon" aria-hidden="true" />
+		<span>{siteConfig.title}</span>
+	</a>
+	<div class="dk-nav-links">
+		{links.map((l) => {
+			const href = l.external ? l.url : url(l.url);
+			if (l.icon) {
+				return (
+					<a
+						aria-label={l.name}
+						href={href}
+						target={l.external ? "_blank" : undefined}
+						rel={l.external ? "noopener noreferrer" : undefined}
+						class:list={["dk-nav-icon", { "is-active": isActive(l) }]}
+						data-no-swup
+					>
+						<Icon name={l.icon} aria-hidden="true" />
+					</a>
+				);
+			}
+			return (
+				<a
+					href={href}
+					target={l.external ? "_blank" : undefined}
+					rel={l.external ? "noopener noreferrer" : undefined}
+					class:list={["dk-nav-link", { "is-active": isActive(l) }]}
+					data-no-swup
+				>
+					{l.name}
+				</a>
+			);
+		})}
+	</div>
+</nav>

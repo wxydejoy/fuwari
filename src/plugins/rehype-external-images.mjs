@@ -1,13 +1,27 @@
 /**
- * Rehype 插件：将外部图片 URL 转换为普通 img 标签
- * 避免 Astro 的 Image 组件在构建时尝试优化外部图片
+ * Rehype 插件：处理外部图片
+ *
+ * 1. 外部图片不交给 Astro 的 Image 组件处理，避免构建时依赖图床可用性
+ * 2. 补充 loading / decoding
+ * 3. 从 src/data/image-dims.json 注入真实宽高，让浏览器提前预留空间，消除 CLS
+ *
+ * image-dims.json 由 `node scripts/update-image-dims.mjs` 生成。
  */
 
+import fs from "node:fs";
+import path from "node:path";
 import { visit } from "unist-util-visit";
 
-/**
- * 检查 URL 是否是外部链接
- */
+const DIMS_FILE = path.join(process.cwd(), "src", "data", "image-dims.json");
+
+let dims = {};
+try {
+	dims = JSON.parse(fs.readFileSync(DIMS_FILE, "utf8"));
+} catch {
+	// 没有尺寸表也能构建，只是少拿一点 CLS 收益
+	dims = {};
+}
+
 function isExternalUrl(url) {
 	if (!url || typeof url !== "string") {
 		return false;
@@ -15,25 +29,27 @@ function isExternalUrl(url) {
 	return url.startsWith("http://") || url.startsWith("https://");
 }
 
-/**
- * Rehype 插件：处理外部图片
- */
+/** 去掉查询串与 hash，兼容带签名参数的图床地址 */
+function normalize(url) {
+	return url.split("#")[0].split("?")[0];
+}
+
 export function rehypeExternalImages() {
 	return (tree) => {
 		visit(tree, "element", (node) => {
-			// 查找所有 img 标签
-			if (node.tagName === "img" && node.properties && node.properties.src) {
-				const src = node.properties.src;
-				
-				// 如果是外部 URL，确保使用普通 img 标签（不进行优化）
-				if (isExternalUrl(src)) {
-					// 添加 loading="lazy" 和 decoding="async" 属性
-					node.properties.loading = node.properties.loading || "lazy";
-					node.properties.decoding = node.properties.decoding || "async";
-					
-					// 确保不会尝试优化
-					node.properties["data-external"] = "true";
-				}
+			if (node.tagName !== "img" || !node.properties?.src) return;
+
+			const src = String(node.properties.src);
+			if (!isExternalUrl(src)) return;
+
+			node.properties.loading = node.properties.loading || "lazy";
+			node.properties.decoding = node.properties.decoding || "async";
+			node.properties["data-external"] = "true";
+
+			const size = dims[src] ?? dims[normalize(src)];
+			if (size && !node.properties.width) {
+				node.properties.width = size.width;
+				node.properties.height = size.height;
 			}
 		});
 	};

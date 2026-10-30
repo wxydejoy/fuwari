@@ -1,0 +1,152 @@
+---
+/**
+ * 守岸人专栏页面壳(专栏首页与各子页共用)。
+ *
+ * 负责:head(meta/VT/兜底遮罩脚本/字体与样式)、底部 footer(资料来源+备案)、
+ * 公共脚本(galaxy 挂载 / 离开过渡标记 / 滚动显现)。
+ * 页面自己渲染:SiteNav、英雄区或页头、正文、灯箱。
+ * 样式:public/landing/style.css(全站) + public/landing/sk.css(专栏 sk-* 体系)。
+ */
+import SiteFooter from "../components/SiteFooter.astro";
+
+interface Props {
+	title: string;
+	description?: string;
+	/** 独立页脚开关;首页把页脚信息收进首屏星空底部时传 false */
+	showFooter?: boolean;
+}
+
+const {
+	title,
+	description = "守岸人专栏——黑海岸的守护者「第二实例」：角色档案、人物介绍、经典语录与图鉴。",
+	showFooter = true,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN" class="landing-page" style="background:#000">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#05060d" />
+    <meta name="view-transition" content="same-origin" />
+    <script is:inline>
+      /* 从博客返回时:以博客当时的背景色/渐变作为首屏遮罩,再渐隐到深色落地页。
+         遮罩在 head 同步放(首帧前),保证无 VT 环境零闪烁;跨文档 View Transition
+         是否激活要等首帧前的 pagereveal 才见分晓——若 e.viewTransition 非空,
+         说明原生过渡已接管,此时遮罩还未绘制过,直接撤掉即可,两层动画不会叠加。
+         标记由博客端 Layout.astro 的 setupLandingTransition 写入。 */
+      (function () {
+        var style = null;
+        var revealTimer = 0;
+        var teardown = function () {
+          if (revealTimer) { clearTimeout(revealTimer); revealTimer = 0; }
+          if (style) { style.remove(); style = null; }
+          document.documentElement.classList.remove("blog-arriving", "blog-reveal");
+        };
+        try {
+          /* 只有博客来路才整屏遮罩(明→暗切换):先纯黑,再 600ms 渐开。
+             主站落地页来路不放假遮罩:两页导航一致、同为纯黑底,
+             子页自己的 dk-load/dk-reveal 入场就是"导航不动、只过渡正文"。
+             landing-transition 是写给博客的标记,这里只消费不使用。 */
+          var bt = JSON.parse(sessionStorage.getItem("blog-transition") || "null");
+          sessionStorage.removeItem("blog-transition");
+          sessionStorage.removeItem("landing-transition");
+          if (
+            bt && Date.now() - bt.t <= 3000 &&
+            !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ) {
+            style = document.createElement("style");
+            style.textContent =
+              "html.blog-arriving::after{content:'';position:fixed;inset:0;z-index:99999;pointer-events:none;" +
+              "opacity:1;transition:opacity 600ms ease;background:#000}" +
+              "html.blog-arriving.blog-reveal::after{opacity:0}";
+            document.head.appendChild(style);
+            document.documentElement.classList.add("blog-arriving");
+
+            var reveal = function () {
+              requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                  if (!style) return;
+                  document.documentElement.classList.add("blog-reveal");
+                });
+              });
+              revealTimer = setTimeout(teardown, 1000);
+            };
+            if (document.readyState === "loading") {
+              document.addEventListener("DOMContentLoaded", reveal);
+            } else {
+              reveal();
+            }
+          }
+        } catch (e) { /* 忽略 sessionStorage 异常 */ }
+        window.addEventListener("pagereveal", function (e) {
+          if (e.viewTransition) {
+            document.documentElement.classList.add("vt-taken");
+            if (style) teardown();
+          }
+        });
+      })();
+    </script>
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon/favicon.ico" />
+    <link
+      rel="preload"
+      href="/landing/fonts/lxgw-wenkai-screen.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="/landing/style.css?v=20261101-4" />
+    <link rel="stylesheet" href="/landing/sk.css?v=20261101-4" />
+  </head>
+  <body>
+    <slot />
+
+    {showFooter && (
+      <footer class="sk-footer">
+        <p class="sk-footer-note">
+          资料整理自公开资料与
+          <a href="https://wuwa.huijiwiki.com/" target="_blank" rel="noopener noreferrer">灰机wiki</a>（CC BY-NC-SA 4.0）
+          · 图片版权归
+          <a href="https://www.kurogame.com/" target="_blank" rel="noopener noreferrer">库洛游戏</a>
+          所有
+        </p>
+        <SiteFooter />
+      </footer>
+    )}
+
+    <script is:inline src="/landing/galaxy.js?v=20261101-3"></script>
+    <script is:inline src="/landing/leave-transition.js?v=20261101-3"></script>
+    <script is:inline>
+      (function () {
+        var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        var canvases = document.querySelectorAll(".sk-hero-background canvas");
+        if (!reduceMotion && window.stellar && window.stellar.galaxy) {
+          window.stellar.galaxy.mountAll(canvases);
+        }
+      })();
+    </script>
+    <script is:inline>
+      /* 滚动显现:进入视口的 .dk-reveal 加 is-in(样式见 landing/style.css) */
+      (function () {
+        var els = Array.prototype.slice.call(document.querySelectorAll(".dk-reveal"));
+        if (!els.length) return;
+        if (!("IntersectionObserver" in window)) {
+          els.forEach(function (el) { el.classList.add("is-in"); });
+          return;
+        }
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-in");
+              io.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.08, rootMargin: "0px 0px -40px 0px" });
+        els.forEach(function (el) { io.observe(el); });
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,53 @@
+---
+import SiteNav from "../../components/SiteNav.astro";
+import SkLayout from "../../layouts/SkLayout.astro";
+import { columnNav, skills, chains } from "../../data/shorekeeper";
+---
+
+<SkLayout title="技能详情 - 守岸人专栏">
+  <main class="sk-page">
+    <SiteNav current={Astro.url.pathname} links={columnNav} class="dk-load" />
+
+    <header class="sk-page-head">
+      <h1 class="sk-section-title">技能详情</h1>
+      <p class="sk-page-lede">共鸣能力「叙响织构」——回音更迭，一如机杼上的丝线，她引导它们缀连，织构出全新的境界。</p>
+    </header>
+
+    <div class="sk-content">
+      <section class="sk-section dk-reveal">
+        <h3 class="sk-sub-title">技能</h3>
+        <div class="sk-skill-grid">
+          {skills.map((skill) => (
+            <div class="sk-skill-card">
+              {skill.icon && <img src={skill.icon} width="72" height="72" alt={`${skill.label} ${skill.name}`} loading="lazy" decoding="async" />}
+              <div class="sk-skill-body">
+                <div class="sk-skill-head">
+                  <span class="sk-skill-name">{skill.name}</span>
+                  <span class="sk-skill-label">{skill.label}</span>
+                </div>
+                <p class="sk-skill-desc">{skill.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section class="sk-section dk-reveal" style="padding-top:0">
+        <h3 class="sk-sub-title">共鸣链</h3>
+        <div class="sk-skill-grid">
+          {chains.map((chain, i) => (
+            <div class="sk-skill-card">
+              <img src={chain.src} width="72" height="72" alt={chain.name} loading="lazy" decoding="async" />
+              <div class="sk-skill-body">
+                <div class="sk-skill-head">
+                  <span class="sk-skill-name">{i + 1} · {chain.name}</span>
+                </div>
+                <p class="sk-skill-desc">{chain.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  </main>
+</SkLayout>
